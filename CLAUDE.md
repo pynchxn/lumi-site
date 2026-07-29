@@ -67,8 +67,15 @@ scrolling underneath it.
   `bookings@dineatlumi.co.uk` — the confirmation screen promises that address.
 - **Contact form.** Doesn't deliver. When wired, route on the subject dropdown:
   *A booking I've made* → bookings@, everything else → hello@.
-- **Mailing list.** Ready — Mailchimp embed, needs the action URL and honeypot
-  field name pasted into `MAILCHIMP` in `content.js`. Turn double opt-in on.
+- **Mailing list.** Done. Connected to Mailchimp and submitting over JSONP
+  (`/subscribe/post-json`) so the visitor never leaves the page — their endpoint
+  sends no CORS headers, so `fetch` can't read the reply and JSONP is the only
+  option from a static site. Config is `MAILCHIMP` in `content.js`; the action
+  URL must use plain `&`, not the `&amp;` Mailchimp's embed code hands you, or
+  the list id never arrives and every signup fails silently.
+  **Single opt-in, deliberately** — contacts land as Subscribed immediately and
+  no confirmation email is sent. The success message says so. `privacy.html`
+  still claims people confirm by email first and needs correcting to match.
 - **Copy and imagery.** Menu, event listings and all photographs are placeholders.
   Every image slot describes the shot that belongs there.
 
@@ -97,9 +104,29 @@ scrolling underneath it.
 
 ## Deploying
 
-Drag the folder to Netlify Drop or Cloudflare Pages, point the domain at it,
-submit `sitemap.xml` in Google Search Console. Ask the host to serve clean URLs
-(`/dishes` rather than `/dishes.html`) if possible.
+Fasthosts shared Linux, uploaded over FTP. Chris deploys; Josh never touches the
+server. No build step, no sync — the live file is whatever was last uploaded.
+
+`.htaccess` in the root carries everything Netlify would have done for free:
+`ErrorDocument` to `404.html`, forced HTTPS (SSL is live — if the cert ever
+lapses, comment that block out first or the whole site reads as down), one hour
+of cache on CSS/JS and a month on images, gzip on text, `Options -Indexes`, and
+a refusal to serve `.md` files and dotfiles.
+
+**Cache times are short on purpose.** Filenames carry no hash, so there's no way
+to bust a cache except waiting it out, and Josh edits `content.js` — a long TTL
+means a new pop-up date invisible for days.
+
+**Clean URLs are deliberately off.** The rewrite rules are written but commented
+in `.htaccess`. Enabling them is a three-part change, not a toggle: every
+internal link across the nine pages, the canonical tags, and `centreInk`'s
+neighbour at `site.js:32` — which derives the current page from
+`location.pathname` and compares it to the nav `href`s, so `/dishes` vs
+`dishes.html` silently kills the current-page underline.
+
+Don't upload: `TODO.md`, `CLAUDE.md`, `README.md`, `.gitignore`, `.DS_Store`
+(root and `assets/`), or the unreferenced WhatsApp images. Submit `sitemap.xml`
+in Search Console once it's live.
 
 ## Checking work
 

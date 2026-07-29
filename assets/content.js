@@ -11,6 +11,11 @@
      1. form action="https://....list-manage.com/subscribe/post?u=...&id=..."
         Copy the whole address inside the quotes into `action` below.
 
+        IMPORTANT: Mailchimp writes the joins between the parts as
+        "&amp;". Change every "&amp;" to a plain "&" after pasting.
+        Left as-is, Mailchimp never sees the list id and every
+        signup fails — with no error on the page to tell you.
+
      2. an input named  b_something_something
         Copy that name into `honeypot` below. It's a spam trap.
 
@@ -18,8 +23,8 @@
    connected yet instead of pretending to work.
 ------------------------------------------------------------- */
 const MAILCHIMP = {
-  action: '',
-  honeypot: ''
+  action: 'https://dineatlumi.us7.list-manage.com/subscribe/post?u=ee05de7d5272a1ee6e94cc746&id=ed676e7556&f_id=003545e4f0',
+  honeypot: 'b_ee05de7d5272a1ee6e94cc746_ed676e7556'
 };
 
 /* ---- Upcoming pop-ups -------------------------------------

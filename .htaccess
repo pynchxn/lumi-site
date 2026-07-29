@@ -1,0 +1,137 @@
+# ============================================================
+# Lumi — dineatlumi.co.uk
+# Apache configuration for Fasthosts Linux hosting.
+# Upload this to the web root alongside index.html.
+# It's a hidden file — turn on "show hidden files" in your FTP
+# client or it won't appear and won't get uploaded.
+# ============================================================
+
+
+# ---- Custom error page -------------------------------------
+# Without this, a wrong address gets the host's generic error
+# page instead of 404.html.
+ErrorDocument 404 /404.html
+
+
+# ---- Force HTTPS -------------------------------------------
+# Every canonical and og:url in the site declares https, and the
+# fonts load over https. Serving over plain http contradicts that
+# and browsers will flag the forms as insecure.
+# SSL is active on the domain, so this is on. If the certificate
+# ever lapses, comment these three lines out before anything else —
+# otherwise every visitor is redirected to an address that won't
+# answer, and the whole site looks down.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+
+# ---- Clean URLs --------------------------------------------
+# Turns /dishes.html into /dishes.
+#
+# LEAVE THIS OFF until three other things are done, or it will
+# quietly make the site worse:
+#
+#   1. Every internal link in the nine HTML files still says
+#      "dishes.html", so each click would take a 301 redirect hop.
+#   2. site.js line 32 works out the current page from the URL and
+#      compares it to the nav hrefs. With clean URLs it compares
+#      "dishes" to "dishes.html", never matches, and the underline
+#      marking the current page silently stops appearing.
+#   3. The canonical tags would need updating to match, or Google
+#      sees two addresses for every page.
+#
+# It's a worthwhile tidy-up, just do it as one deliberate change.
+#
+# <IfModule mod_rewrite.c>
+#   # /index.html -> /   (the homepage canonical is the bare domain)
+#   RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+#   RewriteRule ^ / [R=301,L]
+#
+#   # /anything.html -> /anything
+#   RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+#   RewriteRule ^ /%1 [R=301,L]
+#
+#   # serve the real file behind the clean address
+#   RewriteCond %{REQUEST_FILENAME} !-d
+#   RewriteCond %{REQUEST_FILENAME}.html -f
+#   RewriteRule ^(.+?)/?$ $1.html [L]
+# </IfModule>
+
+
+# ---- Caching -----------------------------------------------
+# Filenames here never change, so there's no way to force a
+# refresh other than waiting for the cache to expire. That's why
+# the code files are set to an hour, not a year:
+# Josh edits content.js, and a long cache would mean a new pop-up
+# date not showing up for visitors for days.
+# Photographs get a month — they get replaced, not edited.
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  ExpiresByType text/html             "access plus 0 seconds"
+  ExpiresByType text/css              "access plus 1 hour"
+  ExpiresByType application/javascript "access plus 1 hour"
+  ExpiresByType text/javascript       "access plus 1 hour"
+
+  ExpiresByType image/jpeg            "access plus 1 month"
+  ExpiresByType image/png             "access plus 1 month"
+  ExpiresByType image/webp            "access plus 1 month"
+  ExpiresByType image/svg+xml         "access plus 1 month"
+  ExpiresByType image/x-icon          "access plus 1 month"
+</IfModule>
+
+
+# ---- Compression -------------------------------------------
+# Text files transfer several times smaller. Images are already
+# compressed and are deliberately left out.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE application/javascript text/javascript
+  AddOutputFilterByType DEFLATE image/svg+xml application/xml
+</IfModule>
+
+
+# ---- Don't serve the working files -------------------------
+# TODO.md, CLAUDE.md and README.md are notes for whoever builds
+# the site, not for visitors. They'd otherwise sit at
+# dineatlumi.co.uk/TODO.md for anyone who guessed the address.
+<FilesMatch "\.(md|log)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+<FilesMatch "^\.">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+
+# ---- Small hardening ---------------------------------------
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Stops assets/images/ being browsable as a file listing.
+#
+# IF THE WHOLE SITE RETURNS 500 IMMEDIATELY AFTER UPLOADING THIS FILE,
+# COMMENT OUT THE LINE BELOW FIRST. Some shared hosts don't permit
+# `Options` in .htaccess, and an unpermitted directive takes down every
+# request rather than being ignored. It's the one line here that can do
+# that — everything else is either core or wrapped in an IfModule guard.
+Options -Indexes

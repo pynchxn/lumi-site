@@ -119,9 +119,30 @@ period.
 
 - [ ] Refresh `lastmod` in `sitemap.xml` (currently all 2026-07-28)
 - [ ] Self-host the fonts — removes the Google IP question and speeds up load
-- [ ] Ask the host for clean URLs (`/dishes` not `/dishes.html`)
 - [ ] Submit `sitemap.xml` in Google Search Console
-- [ ] Delete this file
+- [ ] Don't upload this file, `CLAUDE.md`, `README.md`, `.gitignore`, either
+      `.DS_Store`, or the unreferenced WhatsApp images
+
+### - [ ] Upload `.htaccess` and confirm it took
+It's a hidden file — FileZilla won't show it until *Server → Force showing hidden
+files* is on, and if it doesn't go up the failure is quiet. Verify after upload:
+
+- `http://dineatlumi.co.uk` redirects to `https://`
+- a bogus address renders the Lumi 404, not the Fasthosts error page
+- `dineatlumi.co.uk/assets/` returns 403, not a file listing
+- DevTools → Network shows `content-encoding: gzip` on `styles.css`
+
+### - [ ] Clean URLs — optional, and a real change
+Rules are written but commented at the top of `.htaccess`. Not a toggle on this
+host. Turning them on means all three of:
+
+1. Every internal link across the nine HTML files (`dishes.html` → `dishes`),
+   or each click takes a 301 hop.
+2. [site.js:32](assets/site.js#L32) — derives the current page from
+   `location.pathname` and compares it to the nav `href`s. With clean URLs it
+   compares `dishes` to `dishes.html`, never matches, and the underline marking
+   the current page silently stops appearing.
+3. The canonical tag on each page, or Google sees two addresses for every one.
 
 **No cookie banner is needed** — the site sets no cookies and uses no storage.
 That changes the moment analytics or a Meta/TikTok pixel goes in.

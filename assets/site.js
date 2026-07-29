@@ -28,9 +28,12 @@
 
   const hasEvents = typeof EVENTS !== 'undefined';
 
-  /* ---- mark the current page in the nav ---- */
+  /* ---- mark the current page in the nav ----
+     Skips .btn: the CTA points at pop-ups.html too, so without this both it
+     and the Pop-ups link get marked, and a screen reader announces two
+     current pages. */
   const here = location.pathname.split('/').pop() || 'index.html';
-  $$('.nav a').forEach(a => {
+  $$('.nav a:not(.btn)').forEach(a => {
     if (a.getAttribute('href') === here) a.setAttribute('aria-current', 'page');
   });
 
@@ -232,28 +235,89 @@ if (track && STRIP?.length) {
     if (ok) e.target.reset();
   });
 
-  /* ---- mailing list (Mailchimp) ---- */
+  /* ---- mailing list (Mailchimp) ----
+     Submits in the background so nobody is thrown onto a Mailchimp-branded
+     page mid-signup. Their endpoint sends no CORS headers, so fetch() can't
+     read the reply — JSONP (a <script> tag naming a callback) is the way
+     Mailchimp documents for this, and the only one that works from a
+     static site. The reply lands in #mailstatus, which is role="status",
+     so screen readers announce it without moving focus. */
   const mf = $('#mailform');
   if (mf) {
     const status = $('#mailstatus');
     const cfg = (typeof MAILCHIMP !== 'undefined') ? MAILCHIMP : { action: '', honeypot: '' };
     const ready = /list-manage\.com/.test(cfg.action || '');
+    const btn = mf.querySelector('[type="submit"]');
+
     if (ready) {
+      // Kept in sync for the no-JS case and so the form is valid on its own.
       mf.setAttribute('action', cfg.action);
       if (cfg.honeypot) $('#m-hp').setAttribute('name', cfg.honeypot);
     }
+
+    /* Mailchimp answers in prose with markup in it, prefixed on validation
+       errors with "0 - ". Rewrite the three people actually hit; pass
+       anything else through rather than swallowing it. */
+    const humanise = msg => {
+      const t = String(msg || '').replace(/<[^>]*>/g, '').replace(/^\d+\s*-\s*/, '').trim();
+      if (/already subscribed/i.test(t)) return 'You\'re already on the list.';
+      if (/too many recent/i.test(t))    return 'That\'s a few too many tries — give it a minute and try again.';
+      // Their wording for a bad address varies: "must contain a single @",
+      // "enter a valid email address", "0 - Please enter a value".
+      if (/must contain|valid email|enter a value|invalid/i.test(t))
+        return 'That email doesn\'t look right — check it and try again.';
+      return t || 'Something went wrong. Try again, or email hello@dineatlumi.co.uk.';
+    };
+
+    let seq = 0;
+    const jsonp = url => new Promise((resolve, reject) => {
+      const cb = 'mc_cb_' + (++seq) + '_' + Date.now();
+      const s = document.createElement('script');
+      const timer = setTimeout(() => { cleanup(); reject(); }, 10000);
+      function cleanup() {
+        clearTimeout(timer);
+        delete window[cb];
+        s.remove();
+      }
+      window[cb] = data => { cleanup(); resolve(data); };
+      s.onerror = () => { cleanup(); reject(); };
+      s.src = url + '&c=' + cb;
+      document.body.appendChild(s);
+    });
+
     mf.addEventListener('submit', e => {
+      e.preventDefault();
+
       if (!ready) {
-        e.preventDefault();
         status.textContent = 'Not connected yet — add the Mailchimp details in assets/content.js.';
         return;
       }
-      if (!$('#m-email').value.trim()) {
-        e.preventDefault();
+      const email = $('#m-email').value.trim();
+      if (!email) {
         status.textContent = 'Pop your email in and you\'re on.';
         return;
       }
-      status.textContent = 'Almost there — confirm the link in your inbox and you\'re on the list.';
+
+      const q = new URLSearchParams({ EMAIL: email });
+      const fname = $('#m-fname').value.trim();
+      if (fname) q.set('FNAME', fname);
+      if (cfg.honeypot) q.set(cfg.honeypot, $('#m-hp').value);   // must go up empty
+
+      if (btn) btn.disabled = true;
+      status.textContent = 'One moment…';
+
+      jsonp(cfg.action.replace('/post?', '/post-json?') + '&' + q)
+        .then(r => {
+          const ok = r && r.result === 'success';
+          status.textContent = ok
+            ? 'You\'re on the list. New dates go out a few days before they\'re public.'
+            : humanise(r && r.msg);
+          if (ok) mf.reset();
+        })
+        .catch(() => {
+          status.textContent = 'Couldn\'t reach the list just now. Try again, or email hello@dineatlumi.co.uk.';
+        })
+        .finally(() => { if (btn) btn.disabled = false; });
     });
   }
 

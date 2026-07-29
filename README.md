@@ -26,6 +26,9 @@ Open `assets/content.js` in any text editor. Change the words between the quote
 marks and save. That covers pop-up nights, dishes, pantry products and the
 image captions. Keep the commas and the curly brackets where they are.
 
+Saving the file changes it on your computer, not on the live site — send the
+edited `content.js` to Chris and he'll put it up.
+
 **One catch:** when you add or remove a pop-up night, also update the matching
 block at the bottom of `pop-ups.html`. That copy is what Google reads to show
 your dates in search results, and it can't read the JavaScript version
@@ -34,15 +37,46 @@ paying for itself.
 
 ## Putting it online
 
-Drag this whole folder onto [netlify.com/drop](https://app.netlify.com/drop) or
-into Cloudflare Pages. Both are free at this size. Then point `dineatlumi.co.uk`
-at it — each one walks you through the DNS.
+Hosting is Fasthosts, and uploads go over FTP. Chris handles this — Josh doesn't
+need to read past this line.
+
+Connect with the Fasthosts account credentials and upload the site into the web
+root (`htdocs` on their Linux hosting — worth confirming in the control panel;
+don't drop it a level above, or nothing is served).
+
+Four things that will catch you out:
+
+1. **`.htaccess` is a hidden file.** FileZilla and most FTP clients don't show
+   dotfiles until you ask them to — in FileZilla it's *Server → Force showing
+   hidden files*. If it doesn't upload, none of the config below applies and the
+   symptoms are confusing: no HTTPS redirect, the host's own error page instead
+   of `404.html`.
+2. **Transfer mode must be binary or auto, never ASCII.** ASCII mode silently
+   corrupts JPEGs and you won't find out until they're live.
+3. **Don't upload the working files.** `TODO.md`, `CLAUDE.md`, `README.md`,
+   `.gitignore`, both `.DS_Store` files (one in the root, one in `assets/`), and
+   the unreferenced WhatsApp photographs in `assets/images/`. The `.htaccess`
+   refuses to serve the `.md` files as a backstop, but they shouldn't be up there
+   in the first place.
+4. **Re-upload `content.js` after every content change.** There's no build step
+   and no sync — the live file is whatever was last put there.
 
 Once it's live, submit `sitemap.xml` in Google Search Console. That's what gets
 the pages listed.
 
-If you'd rather the addresses read `dineatlumi.co.uk/dishes` than
-`/dishes.html`, both hosts can do that with one setting — worth asking for.
+### What `.htaccess` is doing
+
+Fasthosts doesn't do any of this by default, so it's all declared in that one
+file: routing wrong addresses to `404.html`, forcing HTTPS, an hour of caching on
+the CSS and JS (short deliberately — filenames never change, so a long cache
+would mean Josh's edits not showing for days), a month on photographs,
+compression on text files, no directory listings, and a refusal to serve the
+working notes.
+
+Clean addresses — `dineatlumi.co.uk/dishes` rather than `/dishes.html` — are
+written but commented out at the top of that file. They're not a toggle here:
+switching them on also means updating every internal link, the canonical tags,
+and the current-page logic in `site.js`. The comment in the file explains it.
 
 ## What isn't real yet
 
@@ -54,31 +88,43 @@ Three things are deliberately placeholders:
    the booking.
 3. **Contact form.** Doesn't deliver anywhere yet.
 
-The mailing list is the exception — it's ready, it just needs your Mailchimp
-details (below).
+The mailing list is the exception — it's connected and working.
 
 Until those are connected, don't advertise the booking button.
 
-## Connecting the mailing list
+## The mailing list
 
-The signup sits above the footer on every page. To switch it on:
+The signup sits above the footer on every page, and it's connected — the
+Mailchimp details live in `MAILCHIMP` at the top of `assets/content.js`.
 
-1. In Mailchimp: **Audience > Signup forms > Embedded forms**.
-2. In the code it shows you, find two things:
-   - the long address in `form action="..."` — it contains `list-manage.com`
-   - an input named `b_` followed by a long string
-3. Open `assets/content.js` and paste them into `MAILCHIMP` at the top.
+If you ever need to repoint it at a different audience, take the two values
+from **Audience > Signup forms > Embedded forms**: the long address in
+`form action="..."` (it contains `list-manage.com`) and the name of the input
+that starts `b_`. Paste both into `MAILCHIMP`.
 
-That's it — one file, and it works on all nine pages.
+**One trap when you do.** Mailchimp writes the joins in that address as
+`&amp;`. Change every one to a plain `&` before saving. Left alone, Mailchimp
+never receives the list id and every signup fails — with nothing on the page
+to tell you, because the site still says it worked.
 
-While you're in Mailchimp, turn **double opt-in on**. It means people confirm
-by email before they're added. It's the safer footing under UK marketing rules,
-and it keeps your list clean, which keeps you out of spam folders.
+Signing up doesn't leave the site: the form submits in the background and the
+line under the button changes to confirm it. Nobody gets dropped onto a
+Mailchimp-branded page mid-signup.
 
-Two things worth knowing: submitting opens Mailchimp's confirmation page in a
-new tab, which is normal for this kind of form. And booking a seat does *not*
-add anyone to the list — under UK rules they have to ask separately. That's
-deliberate, so don't "helpfully" merge the two later.
+**The list is single opt-in.** People are added the moment they submit, and no
+confirmation email goes out — that's the deliberate choice, and the message
+after signup says so plainly.
+
+If you ever switch to double opt-in (**Audience > ⋯ > Audience settings > Form
+settings > Email opt-in settings**), two things need doing at the same time:
+the success message in `assets/site.js` has to go back to telling people to
+check their inbox, and `privacy.html` needs to match. Mailchimp also tends to
+switch reCAPTCHA on alongside it, which can break the background signup — so
+test the form straight after changing it.
+
+One more thing worth knowing: booking a seat does *not* add anyone to the
+list — under UK rules they have to ask separately. That's deliberate, so don't
+"helpfully" merge the two later.
 
 ## Email addresses
 
