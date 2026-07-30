@@ -51,6 +51,16 @@ not the first one in the future. When 12 Sep passes, the homepage keeps
 advertising it until Josh deletes the block by hand from *both* `content.js` and
 the JSON-LD. Filter on date instead.
 
+More pressing now the booking form actually delivers: a past night still shows a
+working button, so Josh gets emailed a request for a date that's already been.
+
+### - [ ] JSON-LD contradicts `content.js` on the September night
+[pop-ups.html:35](pop-ups.html#L35) says `"The Glasshouse"`, `"Bristol"`;
+[content.js:42-43](assets/content.js#L42-L43) says `Hiraeth`, `Cardiff`. Google
+is being told a different venue and city from the one on the page — and the
+booking email carries the `content.js` values, so they'd disagree with whatever
+brought someone to the site. Pick the right one and make both match.
+
 ### - [ ] Correct the November timezone
 [pop-ups.html:37](pop-ups.html#L37) has `2026-11-21T19:00:00+01:00`. BST ends
 25 Oct 2026, so it should be `+00:00` — the time is an hour out in search results.
@@ -68,17 +78,40 @@ browsers, but the fallback doesn't currently do what it looks like it does.
 
 ## 2. Already known — still outstanding
 
-### - [ ] Stripe
-Booking form collects details, shows a confirmation, takes no money and holds no
-seat. Don't advertise the booking button until this is live.
+### - [x] ~~Stripe~~ — dropped, deliberately
+No payment on the site. The booking form emails Josh a request; he confirms and
+takes payment himself. The booking button is fine to advertise now — it asks for
+seats rather than claiming to hold them.
 
-### - [ ] Booking confirmation emails
-Must send **from** `bookings@dineatlumi.co.uk` — the confirmation screen promises
-that address, and a mismatched sender lands in spam.
+### - [x] Booking + contact form delivery — done
+`send.php` in the web root handles both. From `bookings@`, reply-to the visitor.
+Contact routes on the subject dropdown. **The guest gets no automatic email** —
+Josh's reply is the confirmation, and the screen says so.
 
-### - [ ] Contact form delivery
-Route on the subject dropdown: *A booking I've made* → bookings@, everything else
-→ hello@.
+### - [ ] Before this goes live, three things only the live host can answer
+1. **Is PHP enabled on the package?** Visit `/send.php` after uploading. JSON
+   error object = working. Source code or a download = PHP is off, fix it in the
+   Fasthosts control panel.
+2. **Check the domain's SPF record** includes whatever Fasthosts sends mail
+   through. `send.php` sets the envelope sender to `bookings@` so SPF is checked
+   against `dineatlumi.co.uk` — right record and it helps, missing record and it
+   can hurt. Can't be determined from the code; needs a DNS lookup.
+3. **Send one real test and open its full headers.** `Return-Path:` should be
+   `bookings@` — if it's a server system user, the host is overriding the
+   envelope sender and there's nothing to be done in PHP about it. Then press
+   reply and confirm it addresses the visitor. Check it's not in Junk: if it is,
+   it's SPF, or the fact that `From:` and `To:` are both `bookings@`, which some
+   providers treat as spoofing. The fix for the latter is a separate real mailbox
+   on the domain (`site@`) as the sender — don't invent one before it's needed.
+
+### - [ ] If spam starts arriving
+There's a honeypot and length caps, and deliberately no rate limiting — that
+needs writable state for a site running a few nights a year. If it's actually
+needed, the escalation is Cloudflare Turnstile or a signed-timestamp field.
+
+### - [ ] No focus trap in the booking modal
+Tab escapes the dialog into the page behind it. Pre-existing, unrelated to the
+form work, still worth fixing.
 
 ### - [ ] Mailchimp
 Paste the `list-manage.com` action URL and the `b_…` honeypot field name into
@@ -105,18 +138,22 @@ Caveat from the `<link>` in each page's `<head>`. This also makes `centreInk` in
 
 ### - [ ] `booking-terms.html` signed off
 Cancellation window, refund handling and the arrival grace period are drafted
-defaults. Josh confirms each one, and they must match what Stripe is configured
-to do.
+defaults. Josh confirms each one, and they must match how he actually takes
+payment — by arrangement after confirming a seat, not through the site. The
+fourteen-day paragraph assumes payment in full up front; a deposit or paying on
+the night needs different wording.
 
 ### - [ ] `privacy.html` finished properly
-Plain-English outline, not a finished notice. Mailchimp is named; payment
-provider and analytics still need adding, each with a lawful basis and retention
-period.
+Plain-English outline, not a finished notice. Mailchimp is named; there's no
+payment provider to add now, but analytics still needs it, and every category
+needs a lawful basis and a retention period. "As long as required for accounts"
+isn't one.
 
 ---
 
 ## 4. Before launch
 
+- [ ] Upload `send.php` and confirm PHP is enabled — see section 2
 - [ ] Refresh `lastmod` in `sitemap.xml` (currently all 2026-07-28)
 - [ ] Self-host the fonts — removes the Google IP question and speeds up load
 - [ ] Submit `sitemap.xml` in Google Search Console
@@ -155,3 +192,16 @@ No tests. After any change, load the affected page and confirm:
 - the mobile menu opens **after scrolling** (the `.head` containing-block trap)
 - the mailing list band is visible above the footer (the `.rv` observer trap)
 - the booking modal opens and closes on `pop-ups.html` while scrolled down
+
+Touching `send.php` or the form handlers? There's no mail server locally, so run
+it with a stub that keeps the message instead of sending it:
+
+```sh
+printf '#!/bin/sh\ncat >> /tmp/mail.out\n' > /tmp/fakemail.sh && chmod +x /tmp/fakemail.sh
+php -d sendmail_path=/tmp/fakemail.sh -S localhost:8000
+```
+
+`mail()` then succeeds and `/tmp/mail.out` has the whole thing, headers and body.
+It has to be a script, not a bare `cat >> file` — PHP appends the `-f` envelope
+flag to that command and `cat` rejects it. Check both paths: success replaces the
+modal, failure leaves the form and everything typed in it alone.

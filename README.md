@@ -44,8 +44,15 @@ Connect with the Fasthosts account credentials and upload the site into the web
 root (`htdocs` on their Linux hosting — worth confirming in the control panel;
 don't drop it a level above, or nothing is served).
 
-Four things that will catch you out:
+Five things that will catch you out:
 
+0. **`send.php` needs PHP enabled on the package.** It's the one server-side file
+   on the site and it's what makes both forms deliver. Upload it into the same
+   folder as `index.html`, then visit `dineatlumi.co.uk/send.php` in a browser.
+   You want a short JSON error object. If you get the PHP source as text, or a
+   download prompt, PHP isn't switched on for this package — fix that in the
+   Fasthosts control panel. Don't try to force it with an `AddHandler` line in
+   `.htaccess`; the wrong one takes the whole site down with a 500.
 1. **`.htaccess` is a hidden file.** FileZilla and most FTP clients don't show
    dotfiles until you ask them to — in FileZilla it's *Server → Force showing
    hidden files*. If it doesn't upload, none of the config below applies and the
@@ -80,17 +87,38 @@ and the current-page logic in `site.js`. The comment in the file explains it.
 
 ## What isn't real yet
 
-Three things are deliberately placeholders:
+The forms all work now. What's still placeholder is the **menu copy, the event
+listings and every photograph** — each image slot describes the shot that
+belongs in it.
 
-1. **Payment.** The booking form collects details and shows a confirmation, but
-   takes no money and holds no seat. Needs Stripe.
-2. **Emails.** No confirmation actually sends. Needs an email service wired to
-   the booking.
-3. **Contact form.** Doesn't deliver anywhere yet.
+**The site takes no money.** That's a decision, not an unfinished bit. Someone
+asking for seats sends you a request; you confirm it and sort payment yourself.
+See below.
 
-The mailing list is the exception — it's connected and working.
+## Bookings — what actually happens
 
-Until those are connected, don't advertise the booking button.
+Someone fills in the form on the pop-ups page and it emails you at
+**bookings@dineatlumi.co.uk**. That's it. No money changes hands, no seat is
+held, and **they don't get an automatic email** — the screen tells them you'll
+reply, and your reply *is* the confirmation.
+
+The email has the night, the number of seats, their name and address, and any
+allergies. **Press reply and it goes straight to them**, so you never have to
+copy an address out.
+
+Three things worth knowing:
+
+1. **It isn't a booking until you answer.** Until then it's a request sitting in
+   your inbox. If you don't reply, nobody has a seat and nobody has been charged.
+2. **Update the seat count yourself.** `left` in `assets/content.js` only changes
+   when you edit it. Confirm two seats, drop `left` by two, and send the file to
+   Chris — otherwise the site keeps advertising seats you've already given away.
+3. **Requests can arrive for a night that's just filled**, because of the above.
+   The booking terms page says so, and you just offer them the next one.
+
+The contact form works the same way, and sorts itself by the "What's it about"
+dropdown: anything about an existing booking comes to bookings@, everything else
+to hello@.
 
 ## The mailing list
 
@@ -138,20 +166,25 @@ Two are used across the site:
 Both appear in the footer, and both are in the structured data so Google can
 tell them apart.
 
-When the contact form gets connected, route it by the "What's it about"
-dropdown: *A booking I've made* goes to bookings@, everything else to hello@.
-And make sure booking confirmations actually send **from** bookings@ — the
-confirmation screen tells guests to expect that address, and mismatched
-senders land in spam.
+Both are wired up. Booking requests go to bookings@. The contact form sorts
+itself by the "What's it about" dropdown — anything mentioning a booking goes to
+bookings@, everything else to hello@.
+
+Every email the site sends is **from** bookings@, with reply-to set to whoever
+filled the form in. That From address matters: the confirmation screen tells
+people to expect a reply from it, and a sender that doesn't match the domain
+lands in spam.
 
 ## Two things only you can finish
 
 - **`booking-terms.html`** — the cancellation window and refund rules are
-  sensible defaults I drafted. Confirm each one, and make sure they match
-  whatever Stripe is set up to do.
-- **`privacy.html`** — a plain-English outline, not a finished notice. Once
-  the payment and email tools are chosen it needs completing to UK GDPR
-  standards. Worth a solicitor or a reputable template.
+  sensible defaults I drafted. Confirm each one, and make sure they match how you
+  actually take the money. The fourteen-day rule as written assumes you've been
+  paid in full up front; if you take a deposit, or settle on the night, that
+  paragraph needs saying so.
+- **`privacy.html`** — a plain-English outline, not a finished notice. It needs
+  completing to UK GDPR standards, in particular how long you keep a booking
+  email. Worth a solicitor or a reputable template.
 
 ## Photographs
 

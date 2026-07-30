@@ -26,6 +26,12 @@
     };
   };
 
+  /* Anything typed by a visitor that gets interpolated into innerHTML
+     goes through this. Only they can trigger it and nothing persists,
+     so it's tidiness rather than a hole — but it's one line. */
+  const esc = s => String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
   const hasEvents = typeof EVENTS !== 'undefined';
 
   /* ---- image slot ----
@@ -178,14 +184,49 @@ if (track && STRIP?.length) {
     });
   });
 
-  /* ---- booking (placeholder — no payment is taken) ---- */
+  /* ---- form delivery ----
+     The booking form and the contact form both post to send.php on
+     this same host, so a plain fetch works. The mailing list further
+     down needs the JSONP dance instead, because Mailchimp's endpoint
+     is on another domain and sends no CORS headers — that's the
+     difference between the two, not a change of mind.
+     Resolves to the server's message on failure so the caller can
+     show it; falls back to its own wording if the reply is unusable
+     (PHP not enabled, endpoint missing, an error page instead of JSON). */
+  const postForm = (data, fallback) =>
+    fetch('send.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: new URLSearchParams(data)
+    })
+      /* Second handler catches the fetch itself rejecting — offline, DNS,
+         connection dropped — which would otherwise surface the browser's
+         own "Failed to fetch" to the visitor. Both that and an unparseable
+         body collapse to null, and null means show the fallback. */
+      .then(r => r.json().catch(() => null), () => null)
+      .then(r => {
+        if (r && r.ok) return r;
+        throw new Error((r && r.msg) || fallback);
+      });
+
+  /* ---- booking ----
+     No payment is taken here. The form emails the request to
+     bookings@dineatlumi.co.uk and Josh confirms the seats himself,
+     so nothing is held at the point of submitting. The copy below
+     says so — don't soften it without changing what actually happens. */
   const modal = $('#modal');
   if (modal && hasEvents) {
     const modalBody = $('#modalbody');
     let lastFocus = null;
 
     function openModal(html) {
-      lastFocus = document.activeElement;
+      /* Only when the modal is actually opening. The second call — swapping
+         the form for the confirmation — would otherwise overwrite this with
+         something inside the form that's about to be destroyed, and closing
+         would drop focus at the top of the page instead of back on the
+         button that opened it. Disabling the submit button while sending
+         blurs it first, which makes that reliably <body>. */
+      if (!modal.classList.contains('open')) lastFocus = document.activeElement;
       modalBody.innerHTML = html;
       modal.classList.add('open');
       document.body.style.overflow = 'hidden';
@@ -196,7 +237,11 @@ if (track && STRIP?.length) {
       document.body.style.overflow = '';
       lastFocus?.focus();
     }
-    modal.addEventListener('click', e => { if (e.target.hasAttribute('data-close')) closeModal(); });
+    /* closest, not hasAttribute: the Close button on the confirmation wraps
+       its label in a <span>, so a click lands on the span and the attribute
+       is one level up. The × and the veil have no children and worked either
+       way, which is why this went unnoticed. */
+    modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeModal(); });
     addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
     document.addEventListener('click', e => {
@@ -216,35 +261,80 @@ if (track && STRIP?.length) {
           <div class="field"><label for="b-email">Email</label><input id="b-email" type="email" autocomplete="email" required></div>
           <div class="field"><label for="b-seats">Seats</label><select id="b-seats">${opts}</select></div>
           <div class="field"><label for="b-diet">Allergies or dietary requirements</label><input id="b-diet" type="text" placeholder="Optional"></div>
-          <div><button class="btn btn--solid" type="submit"><span>Reserve &amp; pay</span></button></div>
-          <p class="note">By reserving you're agreeing to the <a href="booking-terms.html">booking terms</a>.</p>
-          <p class="note">Demo checkout — no payment is taken and no seat is held.</p>
+          <div class="hp" aria-hidden="true"><input id="b-co" type="text" tabindex="-1" autocomplete="off"></div>
+          <div><button class="btn btn--solid" type="submit"><span>Request these seats</span></button></div>
+          <p class="note">By requesting seats you're agreeing to the <a href="booking-terms.html">booking terms</a>.</p>
+          <p class="note">No payment is taken here. I'll email you back to confirm the seats and sort payment — they're not held until I do.</p>
+          <p class="note" id="bookstatus" role="status"></p>
         </form>`);
+
+      const bookBtn = $('#bookform [type="submit"]'), bookStatus = $('#bookstatus');
 
       $('#bookform').addEventListener('submit', ev2 => {
         ev2.preventDefault();
         const name = $('#b-name').value.trim(), email = $('#b-email').value.trim();
         if (!name || !email) return;
-        openModal(`
-          <p class="eyebrow">You're in</p>
-          <h2 class="h-md" id="modaltitle" style="margin:0 0 16px">See you on the ${ord(+d.day)}, ${name.split(' ')[0]}.</h2>
-          <p class="p">A confirmation is on its way to <b>${email}</b> from bookings@dineatlumi.co.uk, with the address, parking notes and the menu for the night. Worth checking spam if it hasn't landed.</p>
-          <p class="note" style="margin-bottom:24px">Placeholder confirmation — connect Stripe and an email service to make this real.</p>
-          <button class="btn" data-close><span>Close</span></button>`);
+        const seats = $('#b-seats').value;
+
+        bookBtn.disabled = true;
+        bookStatus.textContent = 'One moment…';
+
+        postForm({
+          form: 'booking',
+          name, email, seats,
+          diet: $('#b-diet').value.trim(),
+          /* No id on the events in content.js, and no backend to match one
+             against — the person reading the email needs the night named,
+             and this names it. */
+          event: `${ev.title} — ${d.full}, ${ev.venue}, ${ev.city}`,
+          company: $('#b-co').value
+        }, 'Couldn\'t send that just now. Email bookings@dineatlumi.co.uk and I\'ll sort it.')
+          .then(() => {
+            openModal(`
+              <p class="eyebrow">Request sent</p>
+              <h2 class="h-md" id="modaltitle" style="margin:0 0 16px">Thanks, ${esc(name.split(' ')[0])}.</h2>
+              <p class="p">Your request for <b>${seats} ${seats === '1' ? 'seat' : 'seats'}</b> on the ${ord(+d.day)} has come through to me. I'll email you back from bookings@dineatlumi.co.uk within a day or so to confirm the seats and sort payment.</p>
+              <p class="note" style="margin-bottom:24px">Nothing is held or paid for until then.</p>
+              <button class="btn" data-close><span>Close</span></button>`);
+          })
+          .catch(err => { bookStatus.textContent = err.message; })
+          .finally(() => { bookBtn.disabled = false; });
       });
     });
   }
 
-  /* ---- contact form (placeholder) ---- */
+  /* ---- contact form ----
+     Same endpoint as the booking form. Which address it lands at is
+     decided server-side from the subject dropdown: a question about a
+     seat already booked goes to bookings@, everything else to hello@. */
   const cf = $('#contactform');
-  if (cf) cf.addEventListener('submit', e => {
-    e.preventDefault();
-    const ok = $('#c-name').value.trim() && $('#c-email').value.trim();
-    $('#contactstatus').textContent = ok
-      ? 'Sent. I\'ll come back to you within a day or two. (Demo form — not yet connected.)'
-      : 'Add your name and email and I\'ll get back to you.';
-    if (ok) e.target.reset();
-  });
+  if (cf) {
+    const cStatus = $('#contactstatus'), cBtn = cf.querySelector('[type="submit"]');
+
+    cf.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!$('#c-name').value.trim() || !$('#c-email').value.trim()) {
+        cStatus.textContent = 'Add your name and email and I\'ll get back to you.';
+        return;
+      }
+
+      cBtn.disabled = true;
+      cStatus.textContent = 'One moment…';
+
+      /* This form is real markup with name attributes on it, so FormData
+         reads it directly — the booking form is built in JS and read by id. */
+      postForm(
+        { ...Object.fromEntries(new FormData(cf)), form: 'contact' },
+        'Couldn\'t send that just now. Email hello@dineatlumi.co.uk and it\'ll reach me.'
+      )
+        .then(() => {
+          cStatus.textContent = 'Sent. I\'ll come back to you within a day or two.';
+          cf.reset();
+        })
+        .catch(err => { cStatus.textContent = err.message; })
+        .finally(() => { cBtn.disabled = false; });
+    });
+  }
 
   /* ---- mailing list (Mailchimp) ----
      Submits in the background so nobody is thrown onto a Mailchimp-branded
