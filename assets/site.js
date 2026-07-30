@@ -28,6 +28,17 @@
 
   const hasEvents = typeof EVENTS !== 'undefined';
 
+  /* ---- image slot ----
+     `img` in content.js is either a real file path or a sentence describing
+     the shot that belongs there. A path gets the photograph; anything else
+     stays a labelled placeholder, so half-finished content still renders. */
+  const isPath = s => /^assets\/.+\.(jpe?g|png|webp|avif|svg)$/i.test(s || '');
+
+  const media = (ratio, img, alt) => `
+    <div class="ph ${ratio}">${isPath(img)
+      ? `<img src="${img}" alt="${alt || ''}" loading="lazy" decoding="async">`
+      : `<span class="ph__label">Image<i>${img}</i></span>`}</div>`;
+
   /* ---- mark the current page in the nav ----
      Skips .btn: the CTA points at pop-ups.html too, so without this both it
      and the Pop-ups link get marked, and a screen reader announces two
@@ -94,7 +105,7 @@ if (track && STRIP?.length) {
     dishes.innerHTML = DISHES.map(x => `
       <article class="dish rv">
         <div class="dish__media">
-          <div class="ph r-4x5"><span class="ph__label">Image<i>${x.img}</i></span></div>
+          ${media('r-4x5', x.img, x.alt)}
         </div>
         <div>
           <p class="course">${x.course}</p>
@@ -110,7 +121,7 @@ if (track && STRIP?.length) {
   if (prods && typeof PRODUCTS !== 'undefined') {
     prods.innerHTML = PRODUCTS.map(x => `
       <article class="rv">
-        <div class="ph r-1x1"><span class="ph__label">Image<i>${x.img}</i></span></div>
+        ${media('r-1x1', x.img, x.alt)}
         <h3 class="prod__name">${x.name}</h3>
         <p class="prod__meta">${x.meta}</p>
         <span class="prod__soon">Coming soon</span>

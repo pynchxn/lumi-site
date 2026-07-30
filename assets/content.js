@@ -79,35 +79,35 @@ const DISHES = [
     name: 'Sourdough, cultured butter, burnt honey',
     desc: 'Slow-fermented sourdough baked the morning of service. Butter cultured in-house for three days, whipped with honey caught just past the point of caramel.',
     story: 'The starter is nine years old and has moved house four times. It is the only ingredient at Lumi older than the brand.',
-    img: { src: 'assets/images/dish-1.jpg', alt: 'Torn loaf, steam, butter with a spoon dragged through it. Overhead, hard warm light.' }
+    img: 'assets/images/brioche.jpeg', alt: 'Brioche loaf, cut, on a board, butter and honey in small dishes.',
   },
   {
     course: 'Starter',
     name: 'Cornish crab, apple, dill',
     desc: 'Hand-picked white crab, a sharp green apple broth poured at the table, dill oil and a little brown crab on toast alongside.',
     story: 'Landed at Newlyn and driven up the same day. If the boats stay in, this dish doesn\'t run — which has happened twice.',
-    img: 'Shallow bowl, broth being poured, green oil beading on the surface.'
+    img: 'assets/images/strip-1.jpg', alt: 'White crab, green apple broth, dill oil, brown crab on toast.'
   },
   {
     course: 'Main',
     name: 'Turbot, brown butter, sea herbs',
     desc: 'Turbot on the bone, basted hard in foaming butter, finished with sea purslane and a spoonful of its own roasting juices.',
     story: 'Cooked in one pan, in the room, in front of everyone. It is the loudest ten minutes of the night and the reason the kitchen sits in the middle.',
-    img: 'Fish in the pan mid-baste, butter foaming, spoon in shot.'
+    img: 'assets/images/strip-2.jpg', alt: 'Fish in the pan mid-baste, butter foaming, spoon in shot.'
   },
   {
     course: 'Main',
     name: 'Ember-roasted lamb, wild garlic, smoked potato',
     desc: 'Shoulder cooked long and slow over embers, wild garlic from the same week, potatoes smoked and then crushed with the lamb fat.',
     story: 'Whole shoulders from a farm forty minutes away. Everything that isn\'t served becomes the sauce for the next night.',
-    img: 'Shoulder resting on the board, being pulled apart. Dark background, one light source.'
+    img: 'assets/images/strip-4.jpg', alt: 'Shoulder resting on the board, being pulled apart. Dark background, one light source.'
   },
   {
     course: 'Dessert',
     name: 'Burnt honey custard, oat crumb, sea salt',
     desc: 'Set custard made with the same burnt honey as the bread course, a toasted oat crumb, and enough salt to make you take a second spoonful.',
     story: 'It exists because the first honey I ever burnt was an accident, and it was better than the plan.',
-    img: 'Spoon through set custard, crumb scattered, close crop.'
+    img: 'assets/images/strip-8.jpg', alt: 'Spoon through set custard, crumb scattered, close crop.'
   }
 ];
 
