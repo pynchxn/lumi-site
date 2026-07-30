@@ -32,9 +32,13 @@ sitemap.xml  robots.txt
 - **The sunburst is the signature.** Redrawn from the logo as SVG paths, it draws
   outward from the centre ray on load. It appears in the hero and the footer only.
   A third instance dilutes it.
-- **Wordmark is a script.** Yellowtail stands in for the real logo, Caveat for the
+- **Wordmark is a script.** Alex Brush stands in for the real logo, Caveat for the
   "By Josh Spear" byline. Fraunces for headings, Jost for body. The script does
-  branding only — never section headings.
+  branding only — never section headings. The face is set once, as `--script` in
+  `styles.css`, and feeds the nav `.brand`, the hero `.mark` and the footer
+  lockup — change it there, not per-page. `coming-soon-lumi.html` is standalone
+  and carries its own copy of the variables, so it needs the same edit twice
+  (the `<link>` and its inline `--script`).
 - **No dark mode.** Deliberate. A second palette isn't in the brand.
 - Restraint over decoration. Reveal animation is one fade-up, used consistently.
 - **The hero lockup is optically aligned in JS** (`centreInk` in `site.js`). CSS

@@ -130,7 +130,7 @@ shots, product shots, and the five per-dish photographs. Every slot describes th
 shot that belongs there.
 
 ### - [ ] Swap in the real logo SVG
-Drop it into the marked slot in the hero of `index.html` and drop Yellowtail and
+Drop it into the marked slot in the hero of `index.html` and drop Alex Brush and
 Caveat from the `<link>` in each page's `<head>`. This also makes `centreInk` in
 `site.js` unnecessary — delete it then.
 

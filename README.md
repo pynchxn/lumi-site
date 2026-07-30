@@ -199,7 +199,7 @@ wordmark.
 
 ## The logo
 
-The wordmark is currently set in Yellowtail and the byline in Caveat, standing
+The wordmark is currently set in Alex Brush and the byline in Caveat, standing
 in for your real logo. When you have it as an SVG, drop it into the marked slot
 in the hero of `index.html` and remove those two fonts from the `<link>` tag in
 each page's `<head>`. Everything else keeps working.

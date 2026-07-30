@@ -17,7 +17,7 @@
 
   --display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
   --body: 'Jost', 'Avenir Next', 'Helvetica Neue', sans-serif;
-  --script: 'Yellowtail', 'Snell Roundhand', cursive;   /* stands in for the logo wordmark */
+  --script: 'Alex Brush', 'Snell Roundhand', cursive;   /* stands in for the logo wordmark */
   --hand: 'Caveat', 'Bradley Hand', cursive;            /* the 'By Josh Spear' line */
 
   --gut: clamp(20px, 5vw, 64px);
