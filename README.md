@@ -49,9 +49,11 @@ Five things that will catch you out:
 0. **`send.php` needs PHP enabled on the package.** It's the one server-side file
    on the site and it's what makes both forms deliver. Upload it into the same
    folder as `index.html`, then visit `dineatlumi.co.uk/send.php` in a browser.
-   You want a short JSON error object. If you get the PHP source as text, or a
-   download prompt, PHP isn't switched on for this package — fix that in the
-   Fasthosts control panel. Don't try to force it with an `AddHandler` line in
+   It reports its own health — you want JSON ending
+   `"check":{"php":"8.1","mbstring":true,"mail":true}` or similar. `"mail":false`
+   means the host has switched off mail sending. If you get the PHP source as
+   text, or a download prompt, PHP isn't switched on for this package — fix that
+   in the Fasthosts control panel. Don't try to force it with an `AddHandler` line in
    `.htaccess`; the wrong one takes the whole site down with a 500.
 1. **`.htaccess` is a hidden file.** FileZilla and most FTP clients don't show
    dotfiles until you ask them to — in FileZilla it's *Server → Force showing

@@ -103,6 +103,21 @@ It's the only server-side file on the site; everything else is static.
 - **`ini_set('display_errors','0')` is the first executable line and must stay
   there.** One PHP notice printed ahead of the JSON makes `r.json()` reject in the
   browser, and every submission then looks like a network failure.
+- **Assume no optional extensions.** This shipped broken once because `mb_substr`
+  was called unguarded: mbstring is optional, absent on some hosts, and a call to
+  a missing function is a fatal — which, with `display_errors` off, is a blank
+  response the browser can't parse and a visitor sees as "couldn't send". Every
+  `mb_*` call is now behind `function_exists`, and truncation uses `clip()`, which
+  needs only PCRE. Don't add a call to anything outside core PHP without a guard
+  and a fallback.
+- **Written to PHP 5.4** — no `??`, no array-form `mail()` headers, no arrow
+  functions. Not because the host is known to be old, but because nobody here can
+  test what it actually runs, and every incompatibility fails as the same blank
+  response. Keep new code to that floor.
+- **A GET returns a health check** — `{"ok":false,"msg":…,"check":{php,mbstring,
+  mail}}`. This is how you tell "extension missing" from "PHP off" from "wrong
+  version", all of which otherwise look identical from the browser. Visiting
+  `/send.php` is the first diagnostic step, not the last.
 - **No secrets in this file, ever.** If PHP is misconfigured the server hands out
   the source as plain text. The only sensitive strings are two addresses already
   on every page. Don't put SMTP credentials in here — if it ever needs
@@ -151,10 +166,18 @@ server. No build step, no sync — the live file is whatever was last uploaded.
 
 **`send.php` must go up with everything else, into the same folder as
 `index.html`, and PHP has to be enabled on the hosting package.** Check it after
-uploading by visiting `/send.php` directly — a JSON error object means it's
-working; PHP source or a download prompt means PHP is off. That's a control-panel
-setting; don't try to fix it with an `AddHandler` line in `.htaccess`, because a
-wrong one 500s every request on the site.
+uploading by visiting `/send.php` directly. It answers with a health check:
+
+```json
+{"ok":false,"msg":"…","check":{"php":"8.1","mbstring":true,"mail":true}}
+```
+
+`"mail":false` means the host has disabled `mail()`. A `php` below `5.4` is too
+old for this file. PHP source or a download prompt means PHP isn't enabled at all
+— that's a control-panel setting; don't try to fix it with an `AddHandler` line
+in `.htaccess`, because a wrong one 500s every request on the site. If the check
+looks healthy but no mail arrives, the problem has moved to delivery — SPF, or
+`From:`==`To:` — and `error_log` will have a line for the failed `mail()`.
 
 `.htaccess` in the root carries everything Netlify would have done for free:
 `ErrorDocument` to `404.html`, forced HTTPS (SSL is live — if the cert ever

@@ -89,9 +89,11 @@ Contact routes on the subject dropdown. **The guest gets no automatic email** �
 Josh's reply is the confirmation, and the screen says so.
 
 ### - [ ] Before this goes live, three things only the live host can answer
-1. **Is PHP enabled on the package?** Visit `/send.php` after uploading. JSON
-   error object = working. Source code or a download = PHP is off, fix it in the
-   Fasthosts control panel.
+1. **Visit `/send.php` after uploading** — it reports its own health:
+   `{"check":{"php":"8.1","mbstring":true,"mail":true}}`. `"mail":false` means the
+   host disabled `mail()`; `php` below `5.4` is too old; PHP source or a download
+   prompt means PHP isn't enabled for the package at all, which is a control-panel
+   fix. All healthy and still no mail = it's delivery, so go to 2 and 3.
 2. **Check the domain's SPF record** includes whatever Fasthosts sends mail
    through. `send.php` sets the envelope sender to `bookings@` so SPF is checked
    against `dineatlumi.co.uk` — right record and it helps, missing record and it

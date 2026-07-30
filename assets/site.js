@@ -11,11 +11,6 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const ord = n => {
-    const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  };
-
   const fmt = iso => {
     const d = new Date(iso + 'T00:00:00');
     return {
@@ -25,12 +20,6 @@
       full: d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
     };
   };
-
-  /* Anything typed by a visitor that gets interpolated into innerHTML
-     goes through this. Only they can trigger it and nothing persists,
-     so it's tidiness rather than a hole — but it's one line. */
-  const esc = s => String(s).replace(/[&<>"']/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const hasEvents = typeof EVENTS !== 'undefined';
 
@@ -291,10 +280,8 @@ if (track && STRIP?.length) {
         }, 'Couldn\'t send that just now. Email bookings@dineatlumi.co.uk and I\'ll sort it.')
           .then(() => {
             openModal(`
-              <p class="eyebrow">Request sent</p>
-              <h2 class="h-md" id="modaltitle" style="margin:0 0 16px">Thanks, ${esc(name.split(' ')[0])}.</h2>
-              <p class="p">Your request for <b>${seats} ${seats === '1' ? 'seat' : 'seats'}</b> on the ${ord(+d.day)} has come through to me. I'll email you back from bookings@dineatlumi.co.uk within a day or so to confirm the seats and sort payment.</p>
-              <p class="note" style="margin-bottom:24px">Nothing is held or paid for until then.</p>
+              <h2 class="h-md" id="modaltitle" style="margin:0 0 16px">Request sent</h2>
+              <p class="note" style="margin-bottom:24px">I'll email you back from bookings@dineatlumi.co.uk to confirm. Nothing's held until then.</p>
               <button class="btn" data-close><span>Close</span></button>`);
           })
           .catch(err => { bookStatus.textContent = err.message; })
