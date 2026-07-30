@@ -26,13 +26,14 @@
   /* ---- image slot ----
      `img` in content.js is either a real file path or a sentence describing
      the shot that belongs there. A path gets the photograph; anything else
-     stays a labelled placeholder, so half-finished content still renders. */
+     gets an empty box — the description stays in content.js as the note of
+     what to shoot, but it is no longer printed onto the page. The static
+     slots in the HTML were emptied the same way. */
   const isPath = s => /^assets\/.+\.(jpe?g|png|webp|avif|svg)$/i.test(s || '');
 
-  const media = (ratio, img, alt) => `
-    <div class="ph ${ratio}">${isPath(img)
-      ? `<img src="${img}" alt="${alt || ''}" loading="lazy" decoding="async">`
-      : `<span class="ph__label">Image<i>${img}</i></span>`}</div>`;
+  const media = (ratio, img, alt) => isPath(img)
+    ? `<div class="ph ${ratio}"><img src="${img}" alt="${alt || ''}" loading="lazy" decoding="async"></div>`
+    : `<div class="ph ${ratio}"></div>`;
 
   /* ---- mark the current page in the nav ----
      Skips .btn: the CTA points at pop-ups.html too, so without this both it
@@ -426,8 +427,12 @@ if (track && STRIP?.length) {
     const shift = (m.width - ink) / 2;
     if (isFinite(shift)) el.style.setProperty('--nudge', shift.toFixed(2) + 'px');
   }
+  /* The footer wordmark is in here too: CSS centres it in a box the width of
+     the sunburst above it, and this corrects that centring from advance width
+     to ink, which is what actually lines up with the centre ray. The footer is
+     identical on every page, so this one selector covers all of them. */
   function alignLockup() {
-    document.querySelectorAll('.hero .mark, .hero .byline').forEach(centreInk);
+    document.querySelectorAll('.hero .mark, .hero .byline, .foot .brand').forEach(centreInk);
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignLockup);
   else addEventListener('load', alignLockup);
