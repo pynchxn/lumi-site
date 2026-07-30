@@ -14,6 +14,7 @@ hand and keep content out of markup where possible.
 ```
 index.html  about.html  pop-ups.html  dishes.html  pantry.html
 contact.html  booking-terms.html  privacy.html  404.html
+send.php               booking + contact form delivery — the only server-side file
 assets/styles.css      all design
 assets/content.js      events, dishes, products, Mailchimp config  ← Josh edits this
 assets/site.js         behaviour, guarded so one file serves all pages
@@ -61,12 +62,11 @@ scrolling underneath it.
 
 ## Not real yet
 
-- **Payment.** Booking form collects details, shows a confirmation, takes no money
-  and holds no seat. Needs Stripe.
-- **Emails.** No confirmation actually sends. Must send *from*
-  `bookings@dineatlumi.co.uk` — the confirmation screen promises that address.
-- **Contact form.** Doesn't deliver. When wired, route on the subject dropdown:
-  *A booking I've made* → bookings@, everything else → hello@.
+- **Payment. Deliberately none, not a gap.** Stripe was the plan and was dropped.
+  The booking form sends Josh a *request*; he confirms by email and arranges
+  payment himself, off the site. Don't reintroduce a checkout, and don't let the
+  copy drift back into implying a seat is held or paid for on submit — that
+  wording was the whole reason for the change.
 - **Mailing list.** Done. Connected to Mailchimp and submitting over JSONP
   (`/subscribe/post-json`) so the visitor never leaves the page — their endpoint
   sends no CORS headers, so `fetch` can't read the reply and JSONP is the only
@@ -79,13 +79,55 @@ scrolling underneath it.
 - **Copy and imagery.** Menu, event listings and all photographs are placeholders.
   Every image slot describes the shot that belongs there.
 
+## Forms — `send.php`
+
+Both the booking modal and the contact form post to `send.php` in the web root.
+It's the only server-side file on the site; everything else is static.
+
+- Same origin, so `postForm` in `site.js` uses a plain `fetch` with
+  `x-www-form-urlencoded` and reads a JSON `{ok, msg}` reply. **This is why the
+  mailing list still uses JSONP and these don't** — Mailchimp is cross-origin and
+  sends no CORS headers. Not an inconsistency; don't "unify" them.
+- `From:` is fixed to `bookings@dineatlumi.co.uk`. `Reply-To:` is the visitor, so
+  Josh hits reply and reaches them. **The guest gets no automatic email** — mail
+  from a shared host out to arbitrary domains is what lands in spam, and there's
+  nothing to confirm anyway until Josh answers.
+- **The recipient is chosen server-side and must never come from the request** —
+  that's the difference between a contact form and an open relay. Contact routing
+  matches the word "booking" in the subject → bookings@, everything else →
+  hello@. Substring, not exact match, so rewording the dropdown option in
+  `contact.html` doesn't silently misroute.
+- **Header injection:** everything reaching a header goes through `header_safe`
+  (strips CR/LF/NUL) and display names go through `quoted_name`. Headers are
+  passed to `mail()` as an array so PHP validates them too.
+- **`ini_set('display_errors','0')` is the first executable line and must stay
+  there.** One PHP notice printed ahead of the JSON makes `r.json()` reject in the
+  browser, and every submission then looks like a network failure.
+- **No secrets in this file, ever.** If PHP is misconfigured the server hands out
+  the source as plain text. The only sensitive strings are two addresses already
+  on every page. Don't put SMTP credentials in here — if it ever needs
+  authenticated sending, that's a different design.
+- **No IP address or user agent is logged.** `privacy.html` says so. Adding them
+  creates a personal-data category that needs a lawful basis and retention period.
+- `mail()`'s 5th argument sets the envelope sender, so SPF is checked against
+  `dineatlumi.co.uk` rather than the Fasthosts box. Some hosts refuse it, hence
+  the retry without. If mail lands in Junk, that's SPF or the fact that
+  `From:` and `To:` are both `bookings@` — see TODO.md.
+- Spam protection is a honeypot (`company`, hidden by `.hp`) plus length caps.
+  A filled honeypot gets `{"ok":true}` and sends nothing, so bots can't tell.
+  No rate limiting, deliberately — it needs writable state for a site running a
+  few nights a year.
+
 ## Needs a human, not a model
 
 - `booking-terms.html` — cancellation window and refund rules are drafted defaults.
-  Josh must confirm them, and they must match what Stripe is configured to do.
+  Josh must confirm them, and they must match how he actually takes payment —
+  which is now by arrangement after he confirms a seat, not through the site. The
+  fourteen-day paragraph assumes payment in full up front; a deposit or paying on
+  the night needs different wording.
 - `privacy.html` — plain-English outline, not a finished notice. Mailchimp is
-  named; payment provider and analytics still need adding with lawful basis and
-  retention periods. Don't generate final legal wording.
+  named; analytics still needs adding, and every category needs a lawful basis and
+  a retention period. Don't generate final legal wording.
 
 ## Open items
 
@@ -106,6 +148,13 @@ scrolling underneath it.
 
 Fasthosts shared Linux, uploaded over FTP. Chris deploys; Josh never touches the
 server. No build step, no sync — the live file is whatever was last uploaded.
+
+**`send.php` must go up with everything else, into the same folder as
+`index.html`, and PHP has to be enabled on the hosting package.** Check it after
+uploading by visiting `/send.php` directly — a JSON error object means it's
+working; PHP source or a download prompt means PHP is off. That's a control-panel
+setting; don't try to fix it with an `AddHandler` line in `.htaccess`, because a
+wrong one 500s every request on the site.
 
 `.htaccess` in the root carries everything Netlify would have done for free:
 `ErrorDocument` to `404.html`, forced HTTPS (SSL is live — if the cert ever
@@ -134,3 +183,18 @@ There are no tests. After any change, load the affected page and check:
 mobile menu opens **after scrolling** (see gotcha 1), the mailing list band is
 visible above the footer on every page (gotcha 2), and the booking modal opens
 and closes on the pop-ups page while scrolled down.
+
+If `send.php` or the form handlers changed, also submit a booking request and
+confirm the email arrives. Locally there's no mail server, so run the site with
+PHP's built-in one and point `sendmail_path` at a stub that keeps the message:
+
+```sh
+printf '#!/bin/sh\ncat >> /tmp/mail.out\n' > /tmp/fakemail.sh && chmod +x /tmp/fakemail.sh
+php -d sendmail_path=/tmp/fakemail.sh -S localhost:8000
+```
+
+`mail()` then returns true and `/tmp/mail.out` holds the whole message. A bare
+`cat >> file` won't do — PHP appends the `-f` envelope flag to that command and
+`cat` chokes on it, which is why it needs to be a script that ignores arguments.
+Worth checking on the way past: the failure path leaves the form and everything
+typed into it intact, and only the success path replaces the modal.

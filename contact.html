@@ -92,6 +92,10 @@
         </div>
         <div class="field">
           <label for="c-subject">What's it about</label>
+          <!-- Reword these freely, with one catch: send.php looks for the word
+               "booking" to decide whether a message goes to bookings@ or
+               hello@. Drop that word from the second option and it starts
+               going to hello@ instead. -->
           <select id="c-subject" name="subject">
             <option>A private night</option>
             <option>A booking I've made</option>
@@ -105,6 +109,11 @@
           <label for="c-msg">Message</label>
           <textarea id="c-msg" name="message"></textarea>
         </div>
+        <!-- Bot trap. Real people never see it, and aria-hidden keeps it away
+             from screen readers too — anything that arrives filled in is
+             discarded, so a visitor who could reach it would lose their
+             message without being told. Leave it alone. -->
+        <div class="hp" aria-hidden="true"><input id="c-co" name="company" type="text" tabindex="-1" autocomplete="off"></div>
         <div><button class="btn btn--solid" type="submit"><span>Send message</span></button></div>
         <p class="note" id="contactstatus" role="status"></p>
       </form>
