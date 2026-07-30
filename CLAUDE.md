@@ -98,8 +98,18 @@ It's the only server-side file on the site; everything else is static.
   hello@. Substring, not exact match, so rewording the dropdown option in
   `contact.html` doesn't silently misroute.
 - **Header injection:** everything reaching a header goes through `header_safe`
-  (strips CR/LF/NUL) and display names go through `quoted_name`. Headers are
-  passed to `mail()` as an array so PHP validates them too.
+  (strips CR/LF/NUL) and the `Reply-To` display name goes through `reply_to`,
+  which quotes plain ASCII and RFC 2047-encodes anything else. Headers are
+  joined into one CRLF string, **not** passed to `mail()` as an array — the
+  array form makes PHP re-check them for newlines, but it needs PHP 7.2 and
+  this file is written to 5.4 (see below). Don't "upgrade" it: the protection
+  is `header_safe` plus `FILTER_VALIDATE_EMAIL`, and neither depends on the
+  array form.
+- **Every value read from `$_POST` must be cast before use.** `header_safe` and
+  `body_safe` both do `(string) $v` first; anything that skips them has to guard
+  itself. `company[]=x` makes an unguarded `trim()` a fatal on PHP 8 and a
+  silent discard on PHP 7 — the honeypot check carries an `is_string()` for
+  exactly that reason.
 - **`ini_set('display_errors','0')` is the first executable line and must stay
   there.** One PHP notice printed ahead of the JSON makes `r.json()` reject in the
   browser, and every submission then looks like a network failure.

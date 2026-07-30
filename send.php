@@ -150,8 +150,20 @@ if ((isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '') !== 'P
 
 /* Honeypot. A real visitor never sees this field, so anything in it
    came from a bot. Answer with success — a bot that can tell it was
-   caught is a bot that comes back with the field left empty. */
-if (trim(isset($_POST['company']) ? $_POST['company'] : '') !== '') {
+   caught is a bot that comes back with the field left empty.
+
+   The is_string() test is not fussiness: company[]=x arrives as an
+   array, and trim() on an array is a fatal on PHP 8 — which, with
+   display_errors off, is the blank response the browser can't parse.
+   On PHP 7 it's quieter: a warning and null back. Every other field
+   below is cast by header_safe()/body_safe(); this one has to do it
+   itself.
+
+   Non-string counts as caught, not as empty. No browser can post
+   company[] from this form, so anything that does was hand-made, and
+   letting it through would send mail on a request no visitor made. */
+$hp = isset($_POST['company']) ? $_POST['company'] : '';
+if (!is_string($hp) || trim($hp) !== '') {
   reply(true);
 }
 
