@@ -239,22 +239,18 @@ button{font:inherit;color:inherit}
 .strip__head{display:flex; justify-content:space-between; align-items:baseline; gap:20px; margin-bottom:26px; padding-inline:var(--gut)}
 .strip__head p{margin:0; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted)}
 .track{display:flex; gap:14px; width:max-content; animation:slide 70s linear infinite}
-.strip:hover .track,.strip:focus-within .track{animation-play-state:paused}
+.strip:focus-within .track{animation-play-state:paused}
+@media(hover:hover){.strip:hover .track{animation-play-state:paused}}
 @keyframes slide{to{transform:translateX(-50%)}}
 .track .ph{width:min(74vw,320px); flex:0 0 auto}
 
-/* Touch devices have no real hover, so the pause-on-hover above can stick
-   after a tap and freeze the marquee — and there's nothing for a swipe to
-   grab onto anyway, since the strip only ever moves via that animation.
-   Turn the auto-scroll off and make it a normal swipeable strip instead.
-   The second, aria-hidden copy of every tile exists only to make the CSS
-   loop seamless — with the animation off it would just be the same
-   photos again, so hide it here. */
+/* Touch devices have no real hover, so gating the pause on :hover (above)
+   would stick it "on" after a tap and freeze the marquee permanently — the
+   :hover media query keeps that rule off touch entirely. The marquee keeps
+   auto-scrolling on touch too; it only pauses while a finger is actually
+   down, via :active, which clears itself on release instead of sticking. */
 @media(hover:none){
-  .strip{overflow-x:auto; scroll-snap-type:x proximity}
-  .track{animation:none}
-  .track .ph{scroll-snap-align:start}
-  .track > [aria-hidden="true"]{display:none}
+  .strip:active .track{animation-play-state:paused}
 }
 
 /* ---------- generic grid ---------- */
