@@ -28,12 +28,22 @@ const MAILCHIMP = {
 };
 
 /* ---- Upcoming pop-ups -------------------------------------
-   date  : year-month-day, always in that order
-   seats : how many the room holds
-   left  : how many are still available (set to 0 for sold out)
+   Tickets are sold on Ticket Tailor now — see the widget pasted into
+   pop-ups.html — so this list is no longer what puts a "Book this night"
+   card on the page. Only date, city and left still do anything: they
+   feed the small "Next · 12 Sep · Cardiff · 5 seats left" line in the
+   homepage hero. title, venue, price, seats and blurb aren't rendered
+   anywhere any more — keep them updated here if you still want one place
+   that lists what's on, but the real listing, pricing and descriptions
+   now live in Ticket Tailor, and the JSON-LD block at the bottom of
+   pop-ups.html is what Google reads.
+
+   date : year-month-day, always in that order
+   left : how many are still available (set to 0 to stop the homepage
+          teaser picking this night as "next"). Kept by hand, so it can
+          drift from Ticket Tailor's own count — that's fine, it's only
+          a teaser, not what stops a night being oversold.
    Delete a whole { ... } block to remove a night.
-   ALSO: when you add or remove a night, update the matching
-   block at the bottom of pop-ups.html so Google sees it too.
 ------------------------------------------------------------- */
 const EVENTS = [
   {
@@ -44,7 +54,7 @@ const EVENTS = [
     price: '£85',
     seats: 24,
     left: 5,
-    blurb: 'Tomatoes at their loudest, cooked in a Victorian glasshouse as the light goes. Five courses, one long table.'
+    blurb: 'Tomatoes at their loudest, cooked in a Victorian glasshouse as the light goes. Six courses, one long table.'
   },
   {
     date: '2026-10-03',
@@ -68,49 +78,6 @@ const EVENTS = [
   }
 ];
 
-/* ---- Dishes -----------------------------------------------
-   course : Bread, Starter, Main or Dessert
-   img    : describes the photograph that belongs there
-   Five is the right number. Don't add a sixth.
-------------------------------------------------------------- */
-const DISHES = [
-  {
-    course: 'Bread',
-    name: 'Sourdough, cultured butter, burnt honey',
-    desc: 'Slow-fermented sourdough baked the morning of service. Butter cultured in-house for three days, whipped with honey caught just past the point of caramel.',
-    story: 'The starter is nine years old and has moved house four times. It is the only ingredient at Lumi older than the brand.',
-    img: 'assets/images/brioche.jpeg', alt: 'Brioche loaf, cut, on a board, butter and honey in small dishes.',
-  },
-  {
-    course: 'Starter',
-    name: 'Cornish crab, apple, dill',
-    desc: 'Hand-picked white crab, a sharp green apple broth poured at the table, dill oil and a little brown crab on toast alongside.',
-    story: 'Landed at Newlyn and driven up the same day. If the boats stay in, this dish doesn\'t run — which has happened twice.',
-    img: 'assets/images/strip-1.jpg', alt: 'White crab, green apple broth, dill oil, brown crab on toast.'
-  },
-  {
-    course: 'Main',
-    name: 'Turbot, brown butter, sea herbs',
-    desc: 'Turbot on the bone, basted hard in foaming butter, finished with sea purslane and a spoonful of its own roasting juices.',
-    story: 'Cooked in one pan, in the room, in front of everyone. It is the loudest ten minutes of the night and the reason the kitchen sits in the middle.',
-    img: 'assets/images/strip-2.jpg', alt: 'Fish in the pan mid-baste, butter foaming, spoon in shot.'
-  },
-  {
-    course: 'Main',
-    name: 'Ember-roasted lamb, wild garlic, smoked potato',
-    desc: 'Shoulder cooked long and slow over embers, wild garlic from the same week, potatoes smoked and then crushed with the lamb fat.',
-    story: 'Whole shoulders from a farm forty minutes away. Everything that isn\'t served becomes the sauce for the next night.',
-    img: 'assets/images/strip-4.jpg', alt: 'Shoulder resting on the board, being pulled apart. Dark background, one light source.'
-  },
-  {
-    course: 'Dessert',
-    name: 'Burnt honey custard, oat crumb, sea salt',
-    desc: 'Set custard made with the same burnt honey as the bread course, a toasted oat crumb, and enough salt to make you take a second spoonful.',
-    story: 'It exists because the first honey I ever burnt was an accident, and it was better than the plan.',
-    img: 'assets/images/strip-8.jpg', alt: 'Spoon through set custard, crumb scattered, close crop.'
-  }
-];
-
 /* ---- The pantry (shop) ------------------------------------ */
 const PRODUCTS = [
   { name: 'Burnt honey',            meta: '200g jar · £12', img: 'The jar, lid off, spoon lifting a thread of honey.' },
@@ -122,12 +89,17 @@ const PRODUCTS = [
 
 /* ---- The image strip under the homepage hero -------------- */
 const STRIP = [
-  { src: 'assets/images/strip-1.jpg', alt: 'Plated dish, overhead, dark linen' },
-  { src: 'assets/images/strip-2.jpg', alt: 'Hands finishing a plate' },
-  { src: 'assets/images/strip-3.jpg', alt: 'The room before doors' },
-  { src: 'assets/images/strip-4.jpg', alt: 'Bread, torn, on the board' },
-  { src: 'assets/images/strip-5.jpg', alt: 'Guests mid-service, candlelight' },
-  { src: 'assets/images/strip-6.jpg', alt: 'Market produce, crates' },
-  { src: 'assets/images/strip-7.jpg', alt: 'Fish on the pass' },
-  { src: 'assets/images/strip-8.jpg', alt: 'Dessert, close crop' }
+  { src: 'assets/images/1.jpg', alt: 'Plated dish, overhead, dark linen' },
+  { src: 'assets/images/2.jpg', alt: 'Hands finishing a plate' },
+  { src: 'assets/images/3.jpg', alt: 'The room before doors' },
+  { src: 'assets/images/4.jpg', alt: 'Bread, torn, on the board' },
+  { src: 'assets/images/5.jpg', alt: 'Guests mid-service, candlelight' },
+  { src: 'assets/images/6.jpg', alt: 'Market produce, crates' },
+  { src: 'assets/images/7.jpg', alt: 'Fish on the pass' },
+  { src: 'assets/images/8.jpg', alt: 'Dessert, close crop' },
+  { src: 'assets/images/9.jpg', alt: 'Dessert, close crop' },
+  { src: 'assets/images/10.jpg', alt: 'Dessert, close crop' },
+  { src: 'assets/images/11.jpg', alt: 'Dessert, close crop' },
+  { src: 'assets/images/12.jpg', alt: 'Dessert, close crop' },
+  { src: 'assets/images/13.jpg', alt: 'Dessert, close crop' }
 ];

@@ -1,7 +1,10 @@
 <?php
 /* ============================================================
    LUMI — form delivery
-   The booking modal and the contact form both post here.
+   The contact form posts here. Pop-up tickets are sold on Ticket
+   Tailor now, not this site — see the .tt-widget embed on
+   pop-ups.html and index.html — so this no longer handles a
+   booking request; only form=contact is accepted.
 
    Nothing is stored: this reads a POST, sends one email, and
    answers with JSON. There's no database and no third party.
@@ -176,27 +179,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
   fail('That email doesn\'t look right — check it and try again.');
 }
 
-if ($form === 'booking') {
-  $to      = BOOKINGS;
-  $event   = header_safe(isset($_POST['event']) ? $_POST['event'] : '', 200);
-  $diet    = body_safe(isset($_POST['diet']) ? $_POST['diet'] : '', 1000);
-  /* An integer, not free text — it's read at a glance in the inbox and
-     shouldn't be able to carry anything else. */
-  $seats   = filter_var(isset($_POST['seats']) ? $_POST['seats'] : '', FILTER_VALIDATE_INT,
-                        ['options' => ['min_range' => 1, 'max_range' => 12]]);
-  if ($seats === false) fail('Pick how many seats you\'d like.');
-  $subject = 'Booking request — ' . ($event !== '' ? $event : 'a Lumi night');
-  $body    = "A seat request came in from the website.\n\n"
-           . "Night:  " . ($event !== '' ? $event : '(not recorded)') . "\n"
-           . "Seats:  $seats\n"
-           . "Name:   $name\n"
-           . "Email:  $email\n\n"
-           . "Allergies or dietary requirements:\n"
-           . ($diet !== '' ? $diet : 'None given.') . "\n\n"
-           . "-- \nReply to this message and it goes straight to them.\n"
-           . "Nothing is booked or paid for until you confirm it.\n";
-
-} elseif ($form === 'contact') {
+if ($form === 'contact') {
   /* Routing comes from the subject dropdown: a question about an
      existing seat goes to bookings@, everything else to hello@.
      Decided here, never taken from the request — a recipient the caller

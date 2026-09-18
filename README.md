@@ -9,7 +9,7 @@ Nine pages, no build step, no framework. Open any `.html` file in a browser and 
 | `index.html` | Homepage |
 | `about.html` | About Lumi |
 | `pop-ups.html` | Upcoming nights + booking |
-| `dishes.html` | The five dishes |
+| `menus.html` | The five dishes |
 | `pantry.html` | The shop, not open yet |
 | `contact.html` | Contact form and socials |
 | `booking-terms.html` | Diets, cancellations, access |
@@ -23,17 +23,19 @@ Nine pages, no build step, no framework. Open any `.html` file in a browser and 
 ## Editing it yourself
 
 Open `assets/content.js` in any text editor. Change the words between the quote
-marks and save. That covers pop-up nights, dishes, pantry products and the
-image captions. Keep the commas and the curly brackets where they are.
+marks and save. That covers dishes, pantry products, image captions, and one
+small line about pop-ups — the "Next · 12 Sep · Cardiff" teaser on the
+homepage. Keep the commas and the curly brackets where they are.
 
 Saving the file changes it on your computer, not on the live site — send the
 edited `content.js` to Chris and he'll put it up.
 
-**One catch:** when you add or remove a pop-up night, also update the matching
-block at the bottom of `pop-ups.html`. That copy is what Google reads to show
-your dates in search results, and it can't read the JavaScript version
-reliably. If that becomes annoying, it's the point at which a small CMS starts
-paying for itself.
+**Adding or removing a pop-up night doesn't happen in this file any more** —
+see "Bookings — what actually happens" below. It happens in Ticket Tailor, and
+separately, the JSON-LD block at the bottom of `pop-ups.html` needs updating
+to match, since that's what Google reads to show your dates in search results
+and it can't read the Ticket Tailor widget reliably either. If that becomes
+annoying, it's the point at which a small CMS starts paying for itself.
 
 ## Putting it online
 
@@ -82,7 +84,7 @@ would mean Josh's edits not showing for days), a month on photographs,
 compression on text files, no directory listings, and a refusal to serve the
 working notes.
 
-Clean addresses — `dineatlumi.co.uk/dishes` rather than `/dishes.html` — are
+Clean addresses — `dineatlumi.co.uk/menus` rather than `/menus.html` — are
 written but commented out at the top of that file. They're not a toggle here:
 switching them on also means updating every internal link, the canonical tags,
 and the current-page logic in `site.js`. The comment in the file explains it.
@@ -93,34 +95,47 @@ The forms all work now. What's still placeholder is the **menu copy, the event
 listings and every photograph** — each image slot describes the shot that
 belongs in it.
 
-**The site takes no money.** That's a decision, not an unfinished bit. Someone
-asking for seats sends you a request; you confirm it and sort payment yourself.
-See below.
-
 ## Bookings — what actually happens
 
-Someone fills in the form on the pop-ups page and it emails you at
-**bookings@dineatlumi.co.uk**. That's it. No money changes hands, no seat is
-held, and **they don't get an automatic email** — the screen tells them you'll
-reply, and your reply *is* the confirmation.
+**Tickets are sold through Ticket Tailor**, embedded right on the pop-ups page
+as a single box — it lists and lets guests search or filter your events
+itself, and handles the whole checkout. Someone picks their seats and pays
+there and then; Ticket Tailor takes the money and emails their confirmation
+automatically. Nothing goes through this site or `send.php` for a ticket sale.
 
-The email has the night, the number of seats, their name and address, and any
-allergies. **Press reply and it goes straight to them**, so you never have to
-copy an address out.
+The widget is pasted into `pop-ups.html` as a fixed block — from **Promote >
+Website embed code** in your Ticket Tailor dashboard — not built from
+`content.js`, so there's nothing in `content.js` you need to touch to add,
+change or remove a night any more. **Managing what's on sale now happens
+entirely inside Ticket Tailor**: create the event there, set its price, write
+its description, and it appears in the widget automatically.
 
-Three things worth knowing:
+Four things worth knowing:
 
-1. **It isn't a booking until you answer.** Until then it's a request sitting in
-   your inbox. If you don't reply, nobody has a seat and nobody has been charged.
-2. **Update the seat count yourself.** `left` in `assets/content.js` only changes
-   when you edit it. Confirm two seats, drop `left` by two, and send the file to
-   Chris — otherwise the site keeps advertising seats you've already given away.
-3. **Requests can arrive for a night that's just filled**, because of the above.
-   The booking terms page says so, and you just offer them the next one.
+1. **`content.js`'s event list still exists, but only for one small thing** —
+   the "Next · 12 Sep · Cardiff · 5 seats left" line in the homepage hero.
+   `date`, `city` and `left` there feed that line; the other fields aren't
+   shown anywhere on the site any more. Keep it roughly matched to what's
+   actually next in Ticket Tailor, or that line will point at the wrong night.
+2. **You don't see or handle a single booking through this website.** No
+   email arrives at bookings@dineatlumi.co.uk for a ticket sale any more —
+   Ticket Tailor emails the guest directly, and their dashboard is where you
+   see who's coming. bookings@ is still worth checking: guests use it for
+   allergy questions, changes and anything the contact form routes there.
+3. **Cancellation and refund rules live in two places now.** What
+   `booking-terms.html` says needs to match what you've set in Ticket Tailor's
+   own per-event refund settings — if they disagree, a guest gets told two
+   different things.
+4. **If you ever want the widget to look or behave differently** — a
+   different design, hiding the Ticket Tailor logo, showing fewer events —
+   that's changed from inside Ticket Tailor's own "Website embed code" screen,
+   which then gives you a new block to paste in. Send the new one to Chris
+   rather than editing the pasted code by hand; Ticket Tailor is explicit that
+   changing it can stop it working.
 
-The contact form works the same way, and sorts itself by the "What's it about"
-dropdown: anything about an existing booking comes to bookings@, everything else
-to hello@.
+The contact form still works exactly as before, unchanged by any of this. It
+sorts itself by the "What's it about" dropdown: anything about an existing
+booking comes to bookings@, everything else to hello@.
 
 ## The mailing list
 
@@ -180,10 +195,11 @@ lands in spam.
 ## Two things only you can finish
 
 - **`booking-terms.html`** — the cancellation window and refund rules are
-  sensible defaults I drafted. Confirm each one, and make sure they match how you
-  actually take the money. The fourteen-day rule as written assumes you've been
-  paid in full up front; if you take a deposit, or settle on the night, that
-  paragraph needs saying so.
+  sensible defaults I drafted. Confirm each one, and set Ticket Tailor's own
+  per-event refund settings to match — payment is now taken in full up front
+  at their checkout, so the fourteen-day rule as written fits how the money
+  actually moves, but Ticket Tailor's settings are what a guest sees mid-refund,
+  not this page.
 - **`privacy.html`** — a plain-English outline, not a finished notice. It needs
   completing to UK GDPR standards, in particular how long you keep a booking
   email. Worth a solicitor or a reputable template.

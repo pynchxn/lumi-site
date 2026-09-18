@@ -68,8 +68,8 @@ brought someone to the site. Pick the right one and make both match.
 ### - [ ] Fix the IntersectionObserver guard
 [site.js:134](assets/site.js#L134) reveals everything if `IntersectionObserver` is
 missing, then line 135 constructs one unconditionally — which throws and takes out
-the mobile nav, sunburst, booking modal and forms below it. Academic on current
-browsers, but the fallback doesn't currently do what it looks like it does.
+the mobile nav, sunburst and forms below it. Academic on current browsers, but
+the fallback doesn't currently do what it looks like it does.
 
 ### - [ ] Update the docs once the photos are in
 `CLAUDE.md` and `README.md` both still say all imagery is placeholder.
@@ -78,15 +78,28 @@ browsers, but the fallback doesn't currently do what it looks like it does.
 
 ## 2. Already known — still outstanding
 
-### - [x] ~~Stripe~~ — dropped, deliberately
-No payment on the site. The booking form emails Josh a request; he confirms and
-takes payment himself. The booking button is fine to advertise now — it asks for
-seats rather than claiming to hold them.
+### - [x] ~~Stripe~~ — dropped, then replaced by Ticket Tailor
+Stripe was dropped early on; the plan since was a request-only booking form,
+Josh confirming and taking payment himself. That's now gone too — Josh chose
+Ticket Tailor. Its account-wide "Box Office" widget (Promote > Website embed
+code) is pasted whole into `pop-ups.html` and handles listing, search/filter
+and checkout itself; it isn't built from `content.js` any more. A first pass
+tried a per-event embed instead (`ticketUrl` per event, reconstructed via
+`data-event-page-widget`), but the real dashboard-generated code proved that
+attribute doesn't scope to one event and the URL shape was wrong — see
+CLAUDE.md's Ticket Tailor section for what was actually verified.
 
-### - [x] Booking + contact form delivery — done
-`send.php` in the web root handles both. From `bookings@`, reply-to the visitor.
-Contact routes on the subject dropdown. **The guest gets no automatic email** —
-Josh's reply is the confirmation, and the screen says so.
+### - [x] ~~API instead of the embed~~ — considered, rejected for now
+Ticket Tailor's API is a single secret key over Basic Auth, no public variant
+— using it would mean storing that secret server-side, which `send.php`'s own
+docs explicitly rule out. Worth revisiting only if the content.js/Ticket
+Tailor data duplication below becomes a real problem, deliberately, not
+casually.
+
+### - [x] Contact form delivery — done
+`send.php` in the web root handles it. From `bookings@`, reply-to the visitor.
+Routes on the subject dropdown. It no longer handles booking requests — Ticket
+Tailor does the selling, `send.php` only carries the contact form now.
 
 ### - [ ] Before this goes live, three things only the live host can answer
 1. **Visit `/send.php` after uploading** — it reports its own health:
@@ -110,10 +123,6 @@ Josh's reply is the confirmation, and the screen says so.
 There's a honeypot and length caps, and deliberately no rate limiting — that
 needs writable state for a site running a few nights a year. If it's actually
 needed, the escalation is Cloudflare Turnstile or a signed-timestamp field.
-
-### - [ ] No focus trap in the booking modal
-Tab escapes the dialog into the page behind it. Pre-existing, unrelated to the
-form work, still worth fixing.
 
 ### - [ ] Mailchimp
 Paste the `list-manage.com` action URL and the `b_…` honeypot field name into
@@ -140,16 +149,15 @@ Caveat from the `<link>` in each page's `<head>`. This also makes `centreInk` in
 
 ### - [ ] `booking-terms.html` signed off
 Cancellation window, refund handling and the arrival grace period are drafted
-defaults. Josh confirms each one, and they must match how he actually takes
-payment — by arrangement after confirming a seat, not through the site. The
-fourteen-day paragraph assumes payment in full up front; a deposit or paying on
-the night needs different wording.
+defaults. Josh confirms each one, and Ticket Tailor's own per-event refund
+settings need to be set to match — that's what a guest actually sees mid-refund,
+not this page.
 
 ### - [ ] `privacy.html` finished properly
-Plain-English outline, not a finished notice. Mailchimp is named; there's no
-payment provider to add now, but analytics still needs it, and every category
-needs a lawful basis and a retention period. "As long as required for accounts"
-isn't one.
+Plain-English outline, not a finished notice. Mailchimp and Ticket Tailor are
+both named now; analytics still needs adding if it's switched on, and every
+category needs a lawful basis and a retention period. "As long as required for
+accounts" isn't one.
 
 ---
 
@@ -175,11 +183,11 @@ files* is on, and if it doesn't go up the failure is quiet. Verify after upload:
 Rules are written but commented at the top of `.htaccess`. Not a toggle on this
 host. Turning them on means all three of:
 
-1. Every internal link across the nine HTML files (`dishes.html` → `dishes`),
+1. Every internal link across the nine HTML files (`menus.html` → `menus`),
    or each click takes a 301 hop.
 2. [site.js:32](assets/site.js#L32) — derives the current page from
    `location.pathname` and compares it to the nav `href`s. With clean URLs it
-   compares `dishes` to `dishes.html`, never matches, and the underline marking
+   compares `menus` to `menus.html`, never matches, and the underline marking
    the current page silently stops appearing.
 3. The canonical tag on each page, or Google sees two addresses for every one.
 
@@ -193,7 +201,7 @@ That changes the moment analytics or a Meta/TikTok pixel goes in.
 No tests. After any change, load the affected page and confirm:
 - the mobile menu opens **after scrolling** (the `.head` containing-block trap)
 - the mailing list band is visible above the footer (the `.rv` observer trap)
-- the booking modal opens and closes on `pop-ups.html` while scrolled down
+- the Ticket Tailor widget on `pop-ups.html` loads and opens a working checkout
 
 Touching `send.php` or the form handlers? There's no mail server locally, so run
 it with a stub that keeps the message instead of sending it:

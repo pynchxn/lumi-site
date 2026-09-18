@@ -12,9 +12,9 @@ hand and keep content out of markup where possible.
 ## Structure
 
 ```
-index.html  about.html  pop-ups.html  dishes.html  pantry.html
+index.html  about.html  pop-ups.html  menus.html  pantry.html
 contact.html  booking-terms.html  privacy.html  404.html
-send.php               booking + contact form delivery — the only server-side file
+send.php               contact form delivery — the only server-side file
 assets/styles.css      all design
 assets/content.js      events, dishes, products, Mailchimp config  ← Josh edits this
 assets/site.js         behaviour, guarded so one file serves all pages
@@ -24,21 +24,30 @@ sitemap.xml  robots.txt
 
 ## Design rules — these came from the client, don't undo them
 
-- **Light palette only.** Cream `#FAF3E7`, deeper cream `#F0E6D4`, clay `#8B5D4A`,
-  russet `#5D1F0A`, ink `#2E1C15`, muted `#6F5D4D`. All sampled from the logo.
+- **Light palette only.** Cream `#F9F1E0`, deeper cream `#F0E6D4`, clay `#8B5D4A`,
+  russet `#64220C`, ink `#2E1C15`, muted `#6F5D4D`. All sampled from the logo.
   The hero and footer were originally dark; the client explicitly asked for both
   to be light. **Do not reintroduce dark sections.** The only saturated element
   left is the russet pantry panel on the homepage, and that's on notice.
 - **The sunburst is the signature.** Redrawn from the logo as SVG paths, it draws
-  outward from the centre ray on load. It appears in the hero and the footer only.
-  A third instance dilutes it.
-- **Wordmark is a script.** Alex Brush stands in for the real logo, Caveat for the
-  "By Josh Spear" byline. Fraunces for headings, Jost for body. The script does
-  branding only — never section headings. The face is set once, as `--script` in
-  `styles.css`, and feeds the nav `.brand`, the hero `.mark` and the footer
-  lockup — change it there, not per-page. `coming-soon-lumi.html` is standalone
-  and carries its own copy of the variables, so it needs the same edit twice
-  (the `<link>` and its inline `--script`).
+  outward from the centre ray on load in the hero. That rule — "a third instance
+  dilutes it" — used to mean it only appeared in the hero and the footer. **It's
+  now in three places, on purpose, at the client's explicit request**: the live
+  animated hero SVG, plus `assets/images/lumi-cropped.png` (the full logo
+  lockup — sunburst, script wordmark and byline, flattened into one raster
+  image), which appears a second time in the footer and a third time as the nav
+  `.brand` logo. Don't "fix" this back down to two without asking first — it
+  was a deliberate tradeoff, not an oversight.
+- **Wordmark is a script, except where the real logo image already stands in
+  for it.** Alex Brush is the font stand-in, Caveat for the "By Josh Spear"
+  byline. Fraunces for headings, Jost for body. The script does branding
+  only — never section headings. `--script` in `styles.css` now feeds only the
+  hero `.mark`/`.byline` — the nav `.brand` and the footer lockup both use
+  `assets/images/lumi-cropped.png` directly (an `<img>`, sized with
+  `.brand img`/`.foot__mark`) instead of rendering the font. The hero is the
+  one spot still waiting on the real logo SVG; when that lands, `.mark`,
+  `.byline` and `centreInk` in `site.js` all go, and the hero can use the same
+  image the nav and footer already do.
 - **No dark mode.** Deliberate. A second palette isn't in the brand.
 - Restraint over decoration. Reveal animation is one fade-up, used consistently.
 - **The hero lockup is optically aligned in JS** (`centreInk` in `site.js`). CSS
@@ -64,13 +73,67 @@ Also: `.head` is `pointer-events: none` with `.head > * { pointer-events: auto }
 because a full-width transparent fixed bar otherwise swallows clicks on content
 scrolling underneath it.
 
+## Ticket sales — Ticket Tailor
+
+Stripe was the original plan and was dropped; a request-only booking form (no
+payment, Josh confirms by email and arranges payment himself) replaced it, and
+that in turn has now been replaced by Ticket Tailor. Pop-up tickets are sold
+and paid for at the point of booking, on Ticket Tailor's checkout — **this is
+a deliberate reversal of the old "no payment on this site" decision, not a
+gap to close**. Don't reintroduce the request-only flow, and don't let copy
+drift back into saying nothing is charged at the point of booking.
+
+- **The widget is one static block, pasted whole into `pop-ups.html`, not
+  built by JS.** It's Josh's account-level "Box Office" widget (Ticket Tailor
+  dashboard: **Promote > Website embed code**) — it lists and lets guests
+  search/filter *all* his events itself, with its own checkout. Ticket
+  Tailor's own comment on the snippet says "Do not change the code or the
+  widget may not work properly," so it's pasted verbatim, `&` left
+  un-escaped and all — resist the urge to run it through Prettier or unify
+  it with the site's own markup style.
+- **This replaced a per-event design that turned out to be wrong — worth
+  knowing so it isn't reinvented.** The first attempt gave each event in
+  `content.js` its own `ticketUrl` and reconstructed a per-event embed via
+  `data-event-page-widget="true"`, reverse-engineered from Ticket Tailor's
+  `widget.js` source (their help-centre docs sit behind bot protection that
+  blocks fetches). Real embed code pasted from Josh's dashboard proved that
+  guess wrong on two counts: `data-event-page-widget` only renames the
+  iframe internally, it doesn't scope to one event, and the URL that
+  actually matters is a full **checkout** URL
+  (`tickettailor.com/checkout/new-session/id/…`), not a plain event page
+  address — with no confirmed way to generate a single-event version of it.
+  So `ticketUrl`, `eventCard()` and `mountTicketWidgets()` are gone again;
+  don't re-add them without a real single-event snippet in hand to build
+  against, the same way this one was verified.
+- **The Ticket Tailor API was considered and rejected for this.** It's a
+  single secret key over Basic Auth with no publishable/public variant, so
+  it can never live in client-side JS — using it would mean storing that
+  secret server-side and building a proxy endpoint, which is a real
+  architecture change for a site whose one server-side file, `send.php`, is
+  explicitly documented as carrying no secrets, ever. Revisit only if the
+  content.js/Ticket-Tailor data duplication below becomes a real problem,
+  as its own deliberate decision, not a drive-by upgrade.
+- `EVENTS` in `content.js` no longer drives anything sold — it only feeds
+  the small "Next · 12 Sep · Cardiff · 5 seats left" line in the homepage
+  hero (`date`, `city`, `left`). `title`, `venue`, `price`, `seats` and
+  `blurb` aren't rendered anywhere any more; the real listing, pricing and
+  descriptions live in Ticket Tailor now, a **third** place event data
+  exists alongside `content.js` and the pop-ups.html JSON-LD (see "Event
+  data lives in two places" below, now stale by one).
+- The old booking modal (`#modal`, `openModal`/`closeModal`, the `data-book`
+  buttons, `#all-events`/`#home-events`/`eventCard()`) is gone from
+  `site.js`, `index.html` and `pop-ups.html`, and `send.php` no longer
+  accepts `form=booking` — only `form=contact`. Don't re-add a
+  `to = BOOKINGS` branch there for ticket sales; Ticket Tailor owns that
+  now. `bookings@` still exists for allergy questions, changes and anything
+  the contact form routes there.
+- `booking-terms.html` and `privacy.html` both describe Ticket Tailor's role
+  now. `booking-terms.html`'s cancellation wording assumes payment in full up
+  front — true again now — but only if Ticket Tailor's own per-event refund
+  settings are set to match; that's what a guest actually sees mid-refund.
+
 ## Not real yet
 
-- **Payment. Deliberately none, not a gap.** Stripe was the plan and was dropped.
-  The booking form sends Josh a *request*; he confirms by email and arranges
-  payment himself, off the site. Don't reintroduce a checkout, and don't let the
-  copy drift back into implying a seat is held or paid for on submit — that
-  wording was the whole reason for the change.
 - **Mailing list.** Done. Connected to Mailchimp and submitting over JSONP
   (`/subscribe/post-json`) so the visitor never leaves the page — their endpoint
   sends no CORS headers, so `fetch` can't read the reply and JSONP is the only
@@ -85,8 +148,11 @@ scrolling underneath it.
 
 ## Forms — `send.php`
 
-Both the booking modal and the contact form post to `send.php` in the web root.
-It's the only server-side file on the site; everything else is static.
+The contact form posts to `send.php` in the web root. It's the only
+server-side file on the site; everything else is static. It used to also
+handle the booking modal's request emails — that branch (`form=booking`) is
+gone now that Ticket Tailor sells tickets directly; `send.php` only accepts
+`form=contact`.
 
 - Same origin, so `postForm` in `site.js` uses a plain `fetch` with
   `x-www-form-urlencoded` and reads a JSON `{ok, msg}` reply. **This is why the
@@ -164,9 +230,14 @@ It's the only server-side file on the site; everything else is static.
   removes the question and speeds up load. Not done yet.
 - **No cookie banner, and none needed** — the site sets no cookies and uses no
   storage. This changes the moment analytics or a Meta/TikTok pixel is added.
-- **Event data lives in two places** — `content.js` and the JSON-LD block at the
-  bottom of `pop-ups.html`, because crawlers won't reliably read the JS version.
-  This duplication is the argument for moving to a CMS.
+- **Event data lives in three places now** — `content.js` (just the date/city/
+  left that feed the homepage teaser), the JSON-LD block at the bottom of
+  `pop-ups.html` (because crawlers won't reliably read the JS version), and
+  Ticket Tailor itself, which now owns the real listing, pricing and
+  descriptions. This duplication is the argument for moving to a CMS, or —
+  now there's an API in the mix — for eventually reading event data from
+  Ticket Tailor server-side instead of hand-keeping it (see the API note
+  above on why that's a bigger change than it sounds).
 
 ## Emails
 
@@ -207,8 +278,8 @@ means a new pop-up date invisible for days.
 in `.htaccess`. Enabling them is a three-part change, not a toggle: every
 internal link across the nine pages, the canonical tags, and `centreInk`'s
 neighbour at `site.js:32` — which derives the current page from
-`location.pathname` and compares it to the nav `href`s, so `/dishes` vs
-`dishes.html` silently kills the current-page underline.
+`location.pathname` and compares it to the nav `href`s, so `/menus` vs
+`menus.html` silently kills the current-page underline.
 
 Don't upload: `TODO.md`, `CLAUDE.md`, `README.md`, `.gitignore`, `.DS_Store`
 (root and `assets/`), or the unreferenced WhatsApp images. Submit `sitemap.xml`
@@ -218,11 +289,11 @@ in Search Console once it's live.
 
 There are no tests. After any change, load the affected page and check:
 mobile menu opens **after scrolling** (see gotcha 1), the mailing list band is
-visible above the footer on every page (gotcha 2), and the booking modal opens
-and closes on the pop-ups page while scrolled down.
+visible above the footer on every page (gotcha 2), and the Ticket Tailor
+widget on the pop-ups page loads and opens a checkout.
 
-If `send.php` or the form handlers changed, also submit a booking request and
-confirm the email arrives. Locally there's no mail server, so run the site with
+If `send.php` or the contact form changed, also submit it and confirm the
+email arrives. Locally there's no mail server, so run the site with
 PHP's built-in one and point `sendmail_path` at a stub that keeps the message:
 
 ```sh

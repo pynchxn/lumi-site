@@ -13,6 +13,13 @@
 ErrorDocument 404 /404.html
 
 
+# ---- Renamed pages ------------------------------------------
+# dishes.html became menus.html. Anyone with the old link — search
+# results, a bookmark — gets sent to the new address instead of a 404.
+# Remove once nothing is referring to the old address any more.
+Redirect 301 /dishes.html /menus.html
+
+
 # ---- Force HTTPS -------------------------------------------
 # Every canonical and og:url in the site declares https, and the
 # fonts load over https. Serving over plain http contradicts that
@@ -31,16 +38,16 @@ ErrorDocument 404 /404.html
 
 
 # ---- Clean URLs --------------------------------------------
-# Turns /dishes.html into /dishes.
+# Turns /menus.html into /menus.
 #
 # LEAVE THIS OFF until three other things are done, or it will
 # quietly make the site worse:
 #
 #   1. Every internal link in the nine HTML files still says
-#      "dishes.html", so each click would take a 301 redirect hop.
+#      "menus.html", so each click would take a 301 redirect hop.
 #   2. site.js line 32 works out the current page from the URL and
 #      compares it to the nav hrefs. With clean URLs it compares
-#      "dishes" to "dishes.html", never matches, and the underline
+#      "menus" to "menus.html", never matches, and the underline
 #      marking the current page silently stops appearing.
 #   3. The canonical tags would need updating to match, or Google
 #      sees two addresses for every page.

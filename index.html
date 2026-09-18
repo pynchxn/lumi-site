@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lumi — pop-up dining by Josh Spear</title>
-<meta name="description" content="Pop-up dining by chef Josh Spear. One sitting, one long table, five courses. Book a seat at the next Lumi night.">
+<meta name="description" content="Pop-up dining by chef Josh Spear. One sitting, one long table, six courses. Book a seat at the next Lumi night.">
 <link rel="canonical" href="https://dineatlumi.co.uk/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Lumi">
 <meta property="og:title" content="Lumi — pop-up dining by Josh Spear">
-<meta property="og:description" content="Pop-up dining by chef Josh Spear. One sitting, one long table, five courses. Book a seat at the next Lumi night.">
+<meta property="og:description" content="Pop-up dining by chef Josh Spear. One sitting, one long table, six courses. Book a seat at the next Lumi night.">
 <meta property="og:url" content="https://dineatlumi.co.uk/">
 <meta property="og:image" content="https://dineatlumi.co.uk/assets/images/og-lumi.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#FAF3E7">
+<meta name="theme-color" content="#F9F1E0">
 <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
 <script type="application/ld+json">{
   "@context":"https://schema.org","@type":"FoodEstablishment","@id":"https://dineatlumi.co.uk/#lumi",
   "name":"Lumi","alternateName":"Lumi by Josh Spear","url":"https://dineatlumi.co.uk",
-  "description":"Pop-up dining by chef Josh Spear. One sitting, one long table, five courses.",
+  "description":"Pop-up dining by chef Josh Spear. One sitting, one long table, six courses.",
   "servesCuisine":"Modern British","priceRange":"££££","email":"hello@dineatlumi.co.uk",
   "contactPoint":[
     {"@type":"ContactPoint","contactType":"reservations","email":"bookings@dineatlumi.co.uk","areaServed":"GB","availableLanguage":"English"},
@@ -30,7 +30,7 @@
   ],
   "founder":{"@type":"Person","name":"Josh Spear","jobTitle":"Chef"},
   "areaServed":{"@type":"Place","name":"South West England"},
-  "sameAs":["https://instagram.com/dineatlumi","https://tiktok.com/dineatlumi"]
+  "sameAs":["https://www.facebook.com/profile.php?id=61594381760475","https://instagram.com/dineatlumi","https://tiktok.com/@dineatlumi"]
 }</script>
 </head>
 <body>
@@ -38,13 +38,13 @@
 <div class="glow" id="glow" aria-hidden="true"></div>
 
 <header class="head" id="head">
-  <a class="brand" href="index.html">lumi</a>
+  <a class="brand" href="index.html"><img src="assets/images/lumi-cropped.png" alt="Lumi — by Josh Spear" width="424" height="500" decoding="async"></a>
   <button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="nav" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
   <nav class="nav" id="nav">
     <a href="pop-ups.html">Pop-ups</a>
-    <a href="dishes.html">Dishes</a>
+    <a href="menus.html">Menus</a>
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
     <a href="pop-ups.html" class="btn btn--sm"><span>Book a pop-up</span></a>
@@ -61,12 +61,11 @@
     </div>
     <div class="hero__inner">
       <!-- SWAP: drop the real logo file in here when you have an SVG -->
-      <div class="sun-wrap"><svg class="sun" viewBox="0 10 200 108" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M61.1 100.3L12.8 80.8"/><path d="M65.8 91.6L46.3 77.6"/><path d="M72.6 84.2L53.6 62.3"/><path d="M80.8 78.6L65.7 49.3"/><path d="M90.1 75.2L81.4 39.2"/><path d="M100.0 74.0L100.0 16.0"/><path d="M109.9 75.2L118.6 39.2"/><path d="M119.2 78.6L134.3 49.3"/><path d="M127.4 84.2L146.4 62.3"/><path d="M134.2 91.6L153.7 77.6"/><path d="M138.9 100.3L187.2 80.8"/></g></svg></div>
+      <div class="sun-wrap"><svg class="sun" viewBox="0 10 200 108" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M61.1 100.3L12.8 80.8"/><path d="M67.4 89.6L47.7 73.7"/><path d="M76.5 81.2L59.2 55.5"/><path d="M87.7 75.8L77.2 41.4"/><path d="M100.0 74.0L100.0 16.0"/><path d="M112.3 75.8L122.8 41.4"/><path d="M123.5 81.2L140.8 55.5"/><path d="M132.6 89.6L152.3 73.7"/><path d="M138.9 100.3L187.2 80.8"/></g></svg></div>
       <h1 class="mark">lumi</h1>
       <p class="byline">By Josh Spear</p>
-      <p class="hero__sub">A room, a long table, and one night of light.</p>
+      <p class="hero__sub">Food for the season. Wine for the table. Time for everything in between.</p>
       <div class="hero__cta"><a href="pop-ups.html" class="btn"><span>Book a pop-up</span></a></div>
-      <p class="next" id="nextline"></p>
     </div>
     <div class="scrollcue" aria-hidden="true"></div>
   </div>
@@ -74,8 +73,8 @@
   <!-- food strip -->
   <div class="strip">
     <div class="strip__head">
-      <p>From the last few nights</p>
-      <p class="dim">Cardiff · Bristol · London</p>
+      <p>From the Archives.</p>
+      <p class="dim">Cardiff · London</p>
     </div>
     <div class="track" id="track"></div>
   </div>
@@ -84,59 +83,47 @@
     <div class="wrap two two--wide rv">
       <div>
         <p class="eyebrow">The idea</p>
-        <h2 class="h-lg">Lumi is not a restaurant. It arrives, it glows, it goes.</h2>
+        <h2 class="h-lg">Lumi is a pop-up dining experience, created for a moment and never quite the same twice.</h2>
+        <p class="p" style="margin-top:18px">Each edition brings a new seasonal tasting menu to a carefully chosen space with warm light, good wine and thoughtful hospitality at its heart. Then the table clears, the evening ends, and Lumi moves on to what comes next.</p>
       </div>
       <div>
-        <p class="p">Twenty-odd seats in a room that isn't usually a dining room — a glasshouse, a warehouse, someone's courtyard. One menu, cooked in front of you, built around whatever is best that week.</p>
-        <p class="p">No second sitting. When the last plate goes down we sit with you.</p>
+        <p class="p">A limited number of seats, one seasonal tasting menu and an evening designed to unfold at its own pace. From the first pour to the final course, every detail is considered — the light, the table, the wine, the food and the way the room feels once everyone has settled in.</p>
+        <p class="p">No rush. No second sitting. Just good food, good wine and time to stay a little longer.</p>
         <a href="about.html" class="link">Read the story</a>
       </div>
     </div>
   </div>
 
   <div class="band band--tight">
-    <div class="wrap">
-      <p class="eyebrow rv">Next nights</p>
-      <div id="home-events"></div>
-      <p style="margin-top:34px" class="rv"><a href="pop-ups.html" class="link">All upcoming pop-ups</a></p>
+    <div class="wrap rv" style="max-width:640px">
+      <p class="eyebrow">Next nights</p>
+      <h2 class="h-md">Dates, venues and tickets, all on one page.</h2>
+      <p class="p" style="margin-top:18px">New nights go up first for the mailing list, then here. See what's coming and book your seats.</p>
+      <a href="pop-ups.html" class="link">All upcoming pop-ups</a>
     </div>
   </div>
 
   <div class="band band--tight">
     <div class="wrap two rv">
-      <div class="ph r-4x5">
-        <!-- REPLACE -->
-      </div>
+      <div class="ph r-7x10"><img src="assets/images/menu.png" alt="The Autumn Tasting — Lumi's six-course sample menu for Chapter 1, 1st November, Cardiff, with wine pairings for each course" width="1414" height="2000" loading="lazy" decoding="async"></div>
       <div>
         <p class="eyebrow">On the menu</p>
-        <h2 class="h-lg">Five courses, written the week you eat them.</h2>
-        <p class="p">Bread first, always. Then whatever the coast and the fields have handed over. Dietary requirements are worked into the menu, never bolted onto it.</p>
-        <a href="dishes.html" class="link">See the dishes</a>
+        <h2 class="h-lg">Six courses, written by the season with a side of creativity.</h2>
+        <p class="p">Bread to begin, then a menu shaped by the season and the best produce available to us. Dietary requirements are considered from the start, so every guest can experience the menu as part of the evening, not as an afterthought.
+        </p>
+        <p class="p">New dates go out on the <a href="#signup" class="link">Lumi List.</a></p>
       </div>
     </div>
   </div>
-
-  <div class="band band--tight">
-    <div class="wrap rv">
-      <div class="shop">
-        <p class="eyebrow">Coming later</p>
-        <h2 class="h-md">The Lumi pantry</h2>
-        <p class="lede" style="margin:14px auto 26px">Burnt honey, the cultured butter, the sauces people keep asking to take home. And a small run of aprons and cloths.</p>
-        <a href="#" class="btn"><span>Coming Soon</span></a>
-      </div>
-    </div>
-  </div>
-
 </main>
 
-<section class="signup" aria-labelledby="signuptitle">
+<section class="signup" id="signup" aria-labelledby="signuptitle">
   <div class="wrap">
     <div class="signup__grid rv">
       <div>
-        <p class="eyebrow">The list</p>
-        <h2 class="h-lg" id="signuptitle">Know before the seats go.</h2>
-        <p class="p" style="margin-top:18px">New dates go out to the list a few days before they're public. On the nights that sell out, that's the difference between a seat and a waiting list. Plus the occasional offer, and word when the pantry opens.</p>
-        <p class="note">Roughly once a month. Never more than that.</p>
+        <p class="eyebrow">The Lumi list</p>
+        <h2 class="h-md" id="signuptitle">Know before the seats go.</h2>
+        <p class="p" style="margin-top:18px">New dates go out the Lumi list. On nights that fill quickly, being on the lumi list means hearing first. Expect early access to new dates, menus and locations, with the occasional extra from us along the way.</p>
       </div>
       <form class="form" id="mailform" method="post" target="_blank" novalidate>
         <div class="field">
@@ -161,16 +148,14 @@
   <div class="wrap">
     <div class="foot__grid">
       <div>
-        <div class="sun-wrap sun-wrap--foot"><svg class="sun sun--static" viewBox="0 10 200 108" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M61.1 100.3L12.8 80.8"/><path d="M65.8 91.6L46.3 77.6"/><path d="M72.6 84.2L53.6 62.3"/><path d="M80.8 78.6L65.7 49.3"/><path d="M90.1 75.2L81.4 39.2"/><path d="M100.0 74.0L100.0 16.0"/><path d="M109.9 75.2L118.6 39.2"/><path d="M119.2 78.6L134.3 49.3"/><path d="M127.4 84.2L146.4 62.3"/><path d="M134.2 91.6L153.7 77.6"/><path d="M138.9 100.3L187.2 80.8"/></g></svg></div>
-        <p class="brand" style="margin:0; color:var(--russet)">lumi</p>
-        <p class="byline" style="opacity:1; animation:none; margin:0 0 16px; color:var(--clay)">By Josh Spear</p>
-        <p class="p" style="max-width:34ch; color:var(--muted)">Pop-up dining by Josh Spear. A source of light — and a decent reason to leave the house.</p>
+        <img class="foot__mark" src="assets/images/lumi-cropped.png" alt="Lumi — by Josh Spear" width="424" height="500" loading="lazy" decoding="async">
+        <p class="p" style="max-width:34ch; color:var(--muted)">Pop-up dining by Josh Spear. Seasonal dining. Warm light. Good company.</p>
       </div>
       <div>
         <p class="foot__t">Visit</p>
         <ul>
           <li><a href="pop-ups.html">Upcoming pop-ups</a></li>
-          <li><a href="dishes.html">Dishes</a></li>
+          <li><a href="menus.html">Menus</a></li>
           <li><a href="about.html">About Lumi</a></li>
           <li><a href="contact.html">Contact</a></li>
           <!-- The pantry is not live yet. Uncomment the next line to put it back in the footer. -->
@@ -180,8 +165,9 @@
       <div>
         <p class="foot__t">Elsewhere</p>
         <ul>
-          <li><a href="#" target="_blank" rel="noopener">Instagram</a></li>
-          <li><a href="#" target="_blank" rel="noopener">TikTok</a></li>
+          <li><a href="https://www.facebook.com/profile.php?id=61594381760475" target="_blank" rel="noopener">Facebook</a></li>
+          <li><a href="https://instagram.com/dineatlumi" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://tiktok.com/@dineatlumi" target="_blank" rel="noopener">TikTok</a></li>
           <li><a href="mailto:bookings@dineatlumi.co.uk">bookings@dineatlumi.co.uk</a> — seats</li>
           <li><a href="mailto:hello@dineatlumi.co.uk">hello@dineatlumi.co.uk</a> — everything else</li>
           <li><a href="booking-terms.html">Before you book</a></li>
@@ -195,13 +181,6 @@
     </div>
   </div>
 </footer>
-<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modaltitle">
-  <div class="modal__veil" data-close></div>
-  <div class="modal__box">
-    <button class="modal__x" data-close aria-label="Close">×</button>
-    <div id="modalbody"></div>
-  </div>
-</div>
 <script src="assets/content.js"></script>
 <script src="assets/site.js"></script>
 </body>

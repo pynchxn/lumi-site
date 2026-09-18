@@ -3,11 +3,11 @@
    Palette sampled from the Lumi logo.
    ============================================================ */
 :root{
-  --cream:      #FAF3E7;   /* logo ground */
+  --cream:      #F9F1E0;   /* logo ground */
   --cream-deep: #F0E6D4;
   --sand:       #E2D5BF;
   --clay:       #8B5D4A;   /* logo mark */
-  --russet:     #5D1F0A;   /* sampled from the logo wordmark */
+  --russet:     #64220C;   /* sampled from the logo wordmark */
   --night:      #241310;   /* deepest tone in the mark */
   --ink:        #2E1C15;
   --muted:      #6F5D4D;
@@ -23,11 +23,6 @@
   --gut: clamp(20px, 5vw, 64px);
   --max: 1240px;
   --ease: cubic-bezier(.22,.61,.36,1);
-
-  /* Width of the footer lockup. The sunburst and the wordmark beneath it both
-     take their width from this, so the wordmark stays centred on the centre
-     ray if either is ever resized. Changing it in one place moves both. */
-  --foot-mark: 96px;
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -74,6 +69,7 @@ button{font:inherit;color:inherit}
 .h-lg{font-size:clamp(2.1rem,4.6vw,3.5rem); line-height:1.1}
 .h-md{font-size:clamp(1.5rem,2.6vw,2.1rem); line-height:1.18}
 .h-sm{font-size:clamp(1.15rem,1.7vw,1.4rem); line-height:1.25}
+#signuptitle{font-size:clamp(1.8rem,3.4vw,2.7rem); line-height:1.15}
 .eyebrow{
   font-size:.7rem; text-transform:uppercase; letter-spacing:.24em;
   font-weight:400; color:var(--clay); margin:0 0 1.4em;
@@ -102,10 +98,8 @@ button{font:inherit;color:inherit}
 .head.stuck{padding-block:12px}
 .head.stuck::before{opacity:1; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(9px)}
 .head > *{pointer-events:auto}
-.brand{
-  font-family:var(--script); font-size:1.7rem; letter-spacing:.01em;
-  text-decoration:none; font-weight:400; line-height:1; padding-block:4px;
-}
+.brand{display:flex; align-items:center}
+.brand img{display:block; height:46px; width:auto}
 .nav{display:flex; align-items:center; gap:clamp(18px,2.4vw,34px)}
 .nav a{
   text-decoration:none; font-size:.78rem; letter-spacing:.16em; text-transform:uppercase;
@@ -165,7 +159,7 @@ button{font:inherit;color:inherit}
 .hero__inner{position:relative; z-index:3; padding:110px var(--gut) 90px; width:100%}
 .mark{
   font-family:var(--script); font-weight:400;
-  font-size:clamp(3.8rem,14vw,9.5rem); line-height:1.05; letter-spacing:.005em;
+  font-size:clamp(4rem,15vw,8.4rem); line-height:1.05; letter-spacing:.005em;
   margin:0; color:var(--russet);
   position:relative; left:var(--nudge,0);
   text-shadow:0 2px 34px rgba(250,243,231,.95), 0 0 90px rgba(250,243,231,.8);
@@ -174,8 +168,8 @@ button{font:inherit;color:inherit}
 .byline{
   color:var(--clay);
   position:relative; left:var(--nudge,0);
-  font-family:var(--hand); font-size:clamp(1.1rem,2.2vw,1.6rem); font-weight:400;
-  letter-spacing:.02em; margin:.1em 0 0; opacity:0;
+  font-family:var(--hand); font-size:clamp(1.1rem,2.4vw,1.6rem); font-weight:400;
+  margin:.1em 0 0; opacity:0;
   animation:lite 1.4s var(--ease) 1.1s forwards;
 }
 @keyframes lite{to{opacity:1; transform:none}}
@@ -185,19 +179,12 @@ button{font:inherit;color:inherit}
 .sun path{stroke-dasharray:var(--len,70); stroke-dashoffset:var(--len,70); animation:draw 1.1s var(--ease) forwards}
 .sun--static path{animation:none; stroke-dashoffset:0}
 @keyframes draw{to{stroke-dashoffset:0}}
-.sun-wrap{width:clamp(120px,22vw,230px); margin:0 auto 10px; color:var(--russet);
+.sun-wrap{width:clamp(122px,26vw,230px); margin:0 auto 12px; color:var(--russet);
   filter:drop-shadow(0 0 22px rgba(250,243,231,.95))}
-/* The footer lockup is left-aligned, not centred like the hero's: the sunburst
-   is a fixed-width block at the column's left edge, so its centre ray sits at
-   half of --foot-mark. The wordmark has to be centred on *that*, not on the
-   column, or it hangs to the left of the ray. Same width + text-align does the
-   optical-free part; centreInk() in site.js then nudges for the script face's
-   lopsided side bearings, exactly as it does for the hero mark. */
-.sun-wrap--foot{width:var(--foot-mark); margin:0 0 10px; color:var(--russet)}
-.foot .brand{
-  display:block; width:var(--foot-mark); text-align:center;
-  position:relative; left:var(--nudge,0);
-}
+/* The footer lockup is the real logo (sunburst + wordmark + byline baked into
+   one shot), not the font-and-SVG stand-in the hero still uses — so it's a
+   plain image, no optical centring needed. */
+.foot__mark{width:clamp(110px,16vw,150px); height:auto; display:block; margin:0 0 14px}
 .hero__say{
   font-size:.72rem; letter-spacing:.34em; text-transform:uppercase; color:var(--clay);
   margin:0 0 26px; opacity:0; animation:lite 1.2s var(--ease) .05s forwards;
@@ -245,6 +232,7 @@ button{font:inherit;color:inherit}
 .r-1x1{aspect-ratio:1/1}
 .r-3x2{aspect-ratio:3/2}
 .r-16x9{aspect-ratio:16/9}
+.r-7x10{aspect-ratio:7/10}
 
 /* ---------- the strip (food, below hero) ---------- */
 .strip{padding-block:clamp(46px,6vw,74px); overflow:hidden; position:relative; z-index:2}
@@ -255,37 +243,28 @@ button{font:inherit;color:inherit}
 @keyframes slide{to{transform:translateX(-50%)}}
 .track .ph{width:min(74vw,320px); flex:0 0 auto}
 
+/* Touch devices have no real hover, so the pause-on-hover above can stick
+   after a tap and freeze the marquee — and there's nothing for a swipe to
+   grab onto anyway, since the strip only ever moves via that animation.
+   Turn the auto-scroll off and make it a normal swipeable strip instead.
+   The second, aria-hidden copy of every tile exists only to make the CSS
+   loop seamless — with the animation off it would just be the same
+   photos again, so hide it here. */
+@media(hover:none){
+  .strip{overflow-x:auto; scroll-snap-type:x proximity}
+  .track{animation:none}
+  .track .ph{scroll-snap-align:start}
+  .track > [aria-hidden="true"]{display:none}
+}
+
 /* ---------- generic grid ---------- */
 .two{display:grid; gap:clamp(28px,5vw,72px); align-items:center}
 @media(min-width:860px){.two{grid-template-columns:1fr 1fr}.two--wide{grid-template-columns:1.15fr .85fr}}
 
-/* ---------- events ---------- */
-.ev{
-  display:grid; gap:22px; padding-block:clamp(30px,4vw,46px);
-  border-top:1px solid rgba(139,93,74,.22); align-items:start;
-}
-.ev:last-of-type{border-bottom:1px solid rgba(139,93,74,.22)}
-@media(min-width:900px){.ev{grid-template-columns:120px 1fr 220px; gap:40px}}
-.ev__date{font-family:var(--display); font-size:1.05rem; line-height:1.3; font-variation-settings:'SOFT' 40}
-.ev__date b{display:block; font-size:2.5rem; font-weight:300; line-height:.95}
-.ev__where{font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--clay); margin:0 0 10px}
-.ev__body p{margin:0 0 14px; max-width:52ch}
-.ev__meta{display:flex; flex-wrap:wrap; gap:8px 22px; font-size:.74rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
-.seats{margin-bottom:14px}
-.seats__bar{height:2px; background:rgba(139,93,74,.22); position:relative; overflow:hidden; margin-top:8px}
-.seats__bar i{position:absolute; inset:0 auto 0 0; background:var(--clay); display:block}
-.ev__act{display:flex; flex-direction:column; gap:12px; align-items:flex-start}
-.sold{font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); border:1px solid rgba(139,93,74,.3); padding:.85em 1.6em; border-radius:999px}
-
-/* ---------- dishes ---------- */
-.dish{display:grid; gap:clamp(22px,4vw,60px); padding-block:clamp(34px,5vw,66px); border-top:1px solid rgba(139,93,74,.22)}
-@media(min-width:860px){
-  .dish{grid-template-columns:.85fr 1fr; align-items:center}
-  .dish:nth-child(even) .dish__media{order:2}
-}
-.course{font-size:.68rem; letter-spacing:.26em; text-transform:uppercase; color:var(--clay); margin:0 0 12px}
-.dish__name{margin:0 0 14px}
-.dish__note{font-family:var(--display); font-style:italic; font-size:1.02rem; color:var(--muted); margin:0 0 16px; max-width:48ch}
+/* ---------- Ticket Tailor widget ----------
+   Their own iframe is responsive once it loads; the min-height just
+   stops the page jumping while it does. */
+.tt-widget{width:100%; min-height:280px}
 
 /* ---------- shop teaser ---------- */
 .shop{background:var(--russet); color:var(--cream); border-radius:2px; padding:clamp(34px,5vw,66px); text-align:center}
@@ -307,7 +286,7 @@ button{font:inherit;color:inherit}
 .todo b{color:var(--clay); font-weight:400; letter-spacing:.14em; text-transform:uppercase; font-size:.68rem; display:block; margin-bottom:6px}
 
 /* ---------- mailing list ---------- */
-.signup{border-top:1px solid rgba(139,93,74,.2); padding-block:clamp(56px,8vw,104px)}
+.signup{border-top:1px solid rgba(139,93,74,.2); padding-block:clamp(56px,8vw,104px); scroll-margin-top:90px}
 .signup__grid{display:grid; gap:clamp(26px,4vw,68px)}
 @media(min-width:860px){.signup__grid{grid-template-columns:1.05fr .95fr; align-items:start}}
 .signup .form{gap:16px}
@@ -328,20 +307,19 @@ button{font:inherit;color:inherit}
 .note{font-size:.74rem; color:var(--muted); margin:0}
 .socials{display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:6px}
 
-/* ---------- modal ---------- */
-.modal{position:fixed; inset:0; z-index:80; display:none; place-items:center; padding:20px}
-.modal.open{display:grid}
-.modal__veil{position:absolute; inset:0; background:rgba(93,31,10,.34); backdrop-filter:blur(8px) saturate(1.1)}
-.modal__box{
-  position:relative; background:var(--cream); color:var(--ink);
-  width:min(560px,100%); max-height:88svh; overflow:auto;
-  padding:clamp(26px,4vw,44px); border-radius:3px;
-  box-shadow:0 30px 80px rgba(93,31,10,.20); border:1px solid rgba(139,93,74,.18);
-  animation:rise .5s var(--ease);
-}
+/* ---------- image lightbox ---------- */
+.ph-zoom{display:block; width:100%; background:none; border:0; padding:0; cursor:zoom-in}
+.ph-zoom .ph{transition:opacity .3s var(--ease)}
+.ph-zoom:hover .ph, .ph-zoom:focus-visible .ph{opacity:.85}
+.lightbox{position:fixed; inset:0; z-index:90; display:none; place-items:center; padding:20px}
+.lightbox.open{display:grid}
+.lightbox__veil{position:absolute; inset:0; background:rgba(93,31,10,.34); backdrop-filter:blur(8px) saturate(1.1)}
+.lightbox__body{position:relative; max-width:100%; max-height:88svh; animation:rise .4s var(--ease)}
 @keyframes rise{from{opacity:0; transform:translateY(16px)}}
-.modal__x{position:absolute; top:14px; right:14px; background:none; border:0; cursor:pointer; font-size:1.4rem; line-height:1; padding:8px; opacity:.55}
-.modal__x:hover{opacity:1}
+.lightbox__img{display:block; max-width:100%; max-height:88svh; width:auto; height:auto; object-fit:contain; border-radius:2px; box-shadow:0 30px 80px rgba(93,31,10,.20)}
+.lightbox__ph{width:min(70vw,560px); box-shadow:0 30px 80px rgba(93,31,10,.20)}
+.lightbox__x{position:absolute; top:14px; right:14px; background:none; border:0; cursor:pointer; font-size:1.6rem; line-height:1; padding:10px; color:var(--ink); opacity:.6}
+.lightbox__x:hover{opacity:1}
 
 /* ---------- footer ---------- */
 .foot{background:var(--cream-deep); color:var(--ink); position:relative; z-index:2;
@@ -378,4 +356,5 @@ button{font:inherit;color:inherit}
   .sun path{stroke-dashoffset:0}
   .strip{overflow-x:auto}
   .track{animation:none}
+  .track > [aria-hidden="true"]{display:none}
 }

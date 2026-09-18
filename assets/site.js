@@ -46,70 +46,31 @@
 
   /* ---- food strip ---- */
   const track = $('#track');
-if (track && STRIP?.length) {
-  const tile = ({ src, alt }, dupe = false) => `
-    <div class="ph r-4x5"${dupe ? ' aria-hidden="true"' : ''}>
-      <img src="${src}" alt="${dupe ? '' : alt}" loading="lazy" decoding="async">
-    </div>`;
+  if (track && STRIP?.length) {
+    const tile = ({ src, alt }, dupe = false) => `
+      <div class="ph r-4x5"${dupe ? ' aria-hidden="true"' : ''}>
+        <img src="${src}" alt="${dupe ? '' : alt}" loading="lazy" decoding="async">
+      </div>`;
 
-  track.innerHTML = [
-    ...STRIP.map(item => tile(item)),
-    ...STRIP.map(item => tile(item, true))
-  ].join('');
-}
-
-  /* ---- events ---- */
-  function eventCard(e, i) {
-    const d = fmt(e.date);
-    const out = e.left === 0;
-    const pct = Math.round(((e.seats - e.left) / e.seats) * 100);
-    return `
-    <article class="ev rv">
-      <div class="ev__date"><b>${d.day}</b>${d.mon} ${d.yr}</div>
-      <div class="ev__body">
-        <p class="ev__where">${e.venue} · ${e.city}</p>
-        <h3 class="h-sm" style="margin:0 0 12px">${e.title}</h3>
-        <p>${e.blurb}</p>
-        <div class="ev__meta"><span>${e.price} per seat</span><span>Doors 7pm</span><span>Single sitting</span></div>
-      </div>
-      <div class="ev__act">
-        <div class="seats" style="width:100%">
-          <span class="ev__meta">${out ? 'Fully booked' : e.left + ' of ' + e.seats + ' seats left'}</span>
-          <span class="seats__bar"><i style="width:${out ? 100 : pct}%"></i></span>
-        </div>
-        ${out ? '<span class="sold">Sold out</span>'
-              : `<button class="btn btn--solid" data-book="${i}"><span>Book this night</span></button>`}
-      </div>
-    </article>`;
+    track.innerHTML = [
+      ...STRIP.map(item => tile(item)),
+      ...STRIP.map(item => tile(item, true))
+    ].join('');
   }
 
+  /* ---- next-night teaser ----
+     Tickets are sold on Ticket Tailor now — see the .tt-widget block on
+     pop-ups.html, pasted in as static markup, not built from EVENTS. This
+     is the one place EVENTS in content.js still feeds the page: the small
+     "Next · 12 Sep · Cardiff · 5 seats left" line in the homepage hero.
+     `left` here is still hand-kept, so it can drift from Ticket Tailor's
+     own count — it's a teaser, not the booking surface. */
   if (hasEvents) {
-    const all = $('#all-events'), home = $('#home-events');
-    if (all)  all.innerHTML  = EVENTS.map(eventCard).join('');
-    if (home) home.innerHTML = EVENTS.slice(0, 2).map(eventCard).join('');
-
     const line = $('#nextline'), next = EVENTS.find(e => e.left > 0);
     if (line && next) {
       const d = fmt(next.date);
       line.innerHTML = `Next · <b>${d.day} ${d.mon}</b> · ${next.city} · ${next.left} seats left`;
     }
-  }
-
-  /* ---- dishes ---- */
-  const dishes = $('#dishes');
-  if (dishes && typeof DISHES !== 'undefined') {
-    dishes.innerHTML = DISHES.map(x => `
-      <article class="dish rv">
-        <div class="dish__media">
-          ${media('r-4x5', x.img, x.alt)}
-        </div>
-        <div>
-          <p class="course">${x.course}</p>
-          <h3 class="h-md dish__name">${x.name}</h3>
-          <p class="p">${x.desc}</p>
-          <p class="dish__note">${x.story}</p>
-        </div>
-      </article>`).join('');
   }
 
   /* ---- pantry ---- */
@@ -199,96 +160,50 @@ if (track && STRIP?.length) {
         throw new Error((r && r.msg) || fallback);
       });
 
-  /* ---- booking ----
-     No payment is taken here. The form emails the request to
-     bookings@dineatlumi.co.uk and Josh confirms the seats himself,
-     so nothing is held at the point of submitting. The copy below
-     says so — don't soften it without changing what actually happens. */
-  const modal = $('#modal');
-  if (modal && hasEvents) {
-    const modalBody = $('#modalbody');
-    let lastFocus = null;
+  /* ---- image lightbox ----
+     Any .ph-zoom button opens full-screen, wherever one shows up on the
+     page. Before a real photo is in place, the trigger still only holds an
+     empty .ph placeholder, so this enlarges that placeholder rather than
+     doing nothing — swap in an <img> later and it takes over automatically,
+     shown uncropped (not the object-fit:cover crop the placeholder grid
+     uses). */
+  const lightbox = $('#lightbox');
+  if (lightbox) {
+    const lbBody = $('#lightboxbody');
+    let lbFocus = null;
 
-    function openModal(html) {
-      /* Only when the modal is actually opening. The second call — swapping
-         the form for the confirmation — would otherwise overwrite this with
-         something inside the form that's about to be destroyed, and closing
-         would drop focus at the top of the page instead of back on the
-         button that opened it. Disabling the submit button while sending
-         blurs it first, which makes that reliably <body>. */
-      if (!modal.classList.contains('open')) lastFocus = document.activeElement;
-      modalBody.innerHTML = html;
-      modal.classList.add('open');
+    function openLightbox(trigger) {
+      lbFocus = document.activeElement;
+      lbBody.innerHTML = '';
+      const img = trigger.querySelector('img');
+      if (img) {
+        const clone = document.createElement('img');
+        clone.className = 'lightbox__img';
+        clone.src = img.currentSrc || img.src;
+        clone.alt = img.alt || '';
+        lbBody.appendChild(clone);
+      } else {
+        const ratio = [...(trigger.querySelector('.ph')?.classList || [])].find(c => c.startsWith('r-'));
+        const box = document.createElement('div');
+        box.className = ['ph', ratio, 'lightbox__ph'].filter(Boolean).join(' ');
+        lbBody.appendChild(box);
+      }
+      lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
-      modal.querySelector('input, button, select')?.focus();
+      $('.lightbox__x', lightbox)?.focus();
     }
-    function closeModal() {
-      modal.classList.remove('open');
+    function closeLightbox() {
+      lightbox.classList.remove('open');
       document.body.style.overflow = '';
-      lastFocus?.focus();
+      lbBody.innerHTML = '';
+      lbFocus?.focus();
     }
-    /* closest, not hasAttribute: the Close button on the confirmation wraps
-       its label in a <span>, so a click lands on the span and the attribute
-       is one level up. The × and the veil have no children and worked either
-       way, which is why this went unnoticed. */
-    modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeModal(); });
-    addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
-
     document.addEventListener('click', e => {
-      const btn = e.target.closest('[data-book]');
-      if (!btn) return;
-      const ev = EVENTS[+btn.dataset.book], d = fmt(ev.date);
-      const unit = parseInt(ev.price.replace(/[^0-9]/g, ''), 10);
-      const opts = Array.from({ length: Math.min(6, ev.left) }, (_, i) =>
-        `<option value="${i + 1}">${i + 1} ${i ? 'seats' : 'seat'} — £${unit * (i + 1)}</option>`).join('');
-
-      openModal(`
-        <p class="eyebrow" style="margin-bottom:.8em">${d.full}</p>
-        <h2 class="h-md" id="modaltitle" style="margin:0 0 6px">${ev.title}</h2>
-        <p class="note" style="margin-bottom:26px">${ev.venue}, ${ev.city} · doors 7pm · ${ev.left} seats left</p>
-        <form class="form" id="bookform" style="max-width:none">
-          <div class="field"><label for="b-name">Name</label><input id="b-name" type="text" autocomplete="name" required></div>
-          <div class="field"><label for="b-email">Email</label><input id="b-email" type="email" autocomplete="email" required></div>
-          <div class="field"><label for="b-seats">Seats</label><select id="b-seats">${opts}</select></div>
-          <div class="field"><label for="b-diet">Allergies or dietary requirements</label><input id="b-diet" type="text" placeholder="Optional"></div>
-          <div class="hp" aria-hidden="true"><input id="b-co" type="text" tabindex="-1" autocomplete="off"></div>
-          <div><button class="btn btn--solid" type="submit"><span>Request these seats</span></button></div>
-          <p class="note">By requesting seats you're agreeing to the <a href="booking-terms.html">booking terms</a>.</p>
-          <p class="note">No payment is taken here. I'll email you back to confirm the seats and sort payment — they're not held until I do.</p>
-          <p class="note" id="bookstatus" role="status"></p>
-        </form>`);
-
-      const bookBtn = $('#bookform [type="submit"]'), bookStatus = $('#bookstatus');
-
-      $('#bookform').addEventListener('submit', ev2 => {
-        ev2.preventDefault();
-        const name = $('#b-name').value.trim(), email = $('#b-email').value.trim();
-        if (!name || !email) return;
-        const seats = $('#b-seats').value;
-
-        bookBtn.disabled = true;
-        bookStatus.textContent = 'One moment…';
-
-        postForm({
-          form: 'booking',
-          name, email, seats,
-          diet: $('#b-diet').value.trim(),
-          /* No id on the events in content.js, and no backend to match one
-             against — the person reading the email needs the night named,
-             and this names it. */
-          event: `${ev.title} — ${d.full}, ${ev.venue}, ${ev.city}`,
-          company: $('#b-co').value
-        }, 'Couldn\'t send that just now. Email bookings@dineatlumi.co.uk and I\'ll sort it.')
-          .then(() => {
-            openModal(`
-              <h2 class="h-md" id="modaltitle" style="margin:0 0 16px">Request sent</h2>
-              <p class="note" style="margin-bottom:24px">I'll email you back from bookings@dineatlumi.co.uk to confirm. Nothing's held until then.</p>
-              <button class="btn" data-close><span>Close</span></button>`);
-          })
-          .catch(err => { bookStatus.textContent = err.message; })
-          .finally(() => { bookBtn.disabled = false; });
-      });
+      const zoom = e.target.closest('.ph-zoom');
+      if (zoom) { openLightbox(zoom); return; }
+      if (e.target.closest('[data-lightbox-close]')) closeLightbox();
     });
+    addEventListener('keydown', e => { if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox(); });
   }
 
   /* ---- contact form ----
@@ -427,12 +342,8 @@ if (track && STRIP?.length) {
     const shift = (m.width - ink) / 2;
     if (isFinite(shift)) el.style.setProperty('--nudge', shift.toFixed(2) + 'px');
   }
-  /* The footer wordmark is in here too: CSS centres it in a box the width of
-     the sunburst above it, and this corrects that centring from advance width
-     to ink, which is what actually lines up with the centre ray. The footer is
-     identical on every page, so this one selector covers all of them. */
   function alignLockup() {
-    document.querySelectorAll('.hero .mark, .hero .byline, .foot .brand').forEach(centreInk);
+    document.querySelectorAll('.hero .mark, .hero .byline').forEach(centreInk);
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignLockup);
   else addEventListener('load', alignLockup);
